@@ -6,6 +6,7 @@ scheme=OrzMC
 team_id=2N62934Y28
 configuration=Release
 destination="generic/platform=macOS"
+gh_pages_branch="gh-pages"
 
 apple_id="824219521@qq.com"
 app_specific_password="bbgb-nzuk-trqz-uzax"
@@ -14,10 +15,41 @@ notary_timeout_duration="5m"
 # path defination
 git_repo_dir=$(git rev-parse --show-toplevel)
 git_url=$(git remote get-url origin)
+extract_repo_name() {
+    local url="$1"
+    # 移除协议前缀
+    url=${url#*://}
+    # 移除用户名和密码部分（如果存在）
+    url=${url#*@}
+    # 提取路径部分
+    url=${url#*/}
+    # 移除 .git 后缀
+    url=${url%.git}
+    # 如果URL以/结尾，移除最后的/
+    url=${url%/}
+    # 返回最后一个路径部分
+    echo "${url##*/}"
+}
+git_repo_name=$(extract_repo_name ${git_url})
+extract_user_repo() {
+    local url="$1"
+    # 移除协议前缀（https://, git://, ssh://等）
+    url=${url#*://}
+    # 处理git@格式（git@github.com:user/repo.git）
+    url=${url#*@}
+    # 替换:为/（处理git@格式）
+    url=${url/://}
+    # 移除.git后缀
+    url=${url%.git}
+    # 提取user/repo部分
+    echo "${url#*/}"
+}
+git_user_repo_name=$(extract_user_repo ${git_url})
 derived_data_path="$git_repo_dir/DerivedData"
 build_dir=$git_repo_dir/build
 archive_path="$build_dir/$scheme.xcarchive"
 app_dir=$git_repo_dir
+docs_dir="${app_dir}/docs"
 product_dir=$app_dir/products
 
 export_options_plist=$app_dir/exportOptions.plist
@@ -30,6 +62,7 @@ app_info_plist="$export_app/Contents/Info.plist"
 
 sparkle_bin=$derived_data_path/SourcePackages/artifacts/sparkle/Sparkle/bin
 
+# Publish App
 function remove() {
     for path in $*
     do
@@ -233,4 +266,84 @@ build && sparkle && archive   && \
 write_export_options_plist    && \
 exportArchive && notarize     && \
 sparkle && distribute "zip"   && \
-write_appcast_xml && cleanup
+write_appcast_xml && cleanup  && \
+echo "✅ App Generated"
+
+# Publish Documentation to Github Pages
+function build_doc() {
+    echo "Building documentation..."
+    xcodebuild docbuild             \
+        -quiet                      \
+        -scheme ${scheme}           \
+        -destination ${destination} \
+        -derivedDataPath ${derived_data_path}
+}
+
+function convert_doc() {
+    echo "Converting documentation..."
+    DOCCARCHIVE_PATH=$(find ${derived_data_path} -type d -name "${scheme}.doccarchive")
+    xcrun docc process-archive transform-for-static-hosting \
+      "$DOCCARCHIVE_PATH"                                   \
+      --output-path ${docs_dir}                             \
+      --hosting-base-path /${git_repo_name}                 \
+      && rm -rf ${derived_data_path}
+}
+
+function prepare_index_page() {
+    echo "Preparing GitHub Pages files..."
+    lowercase_scheme=$(echo "$scheme" | tr '[:upper:]' '[:lower:]')
+    touch ${docs_dir}/.nojekyll
+    cat > ${docs_dir}/index.html <<EOF
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta http-equiv="refresh" content="0; url=/${git_repo_name}/documentation/${lowercase_scheme}">
+    </head>
+    <body>
+        <p>Redirecting to <a href="/${git_repo_name}/documentation/${lowercase_scheme}">documentation</a>...</p>
+    </body>
+    </html>
+EOF
+}
+
+function push_to_gh_pages() {
+    echo "Publishing to GitHub Pages..."
+
+    # 检查分支是否存在
+    if git show-ref --quiet refs/heads/${gh_pages_branch}; then
+      # 分支存在，检出到临时目录
+      git worktree add --force ${gh_pages_branch} ${gh_pages_branch}
+    else
+      # 分支不存在，创建孤儿分支
+      current_branch_name_bak=$(git branch --show-current)
+      git checkout --orphan ${gh_pages_branch}
+      git rm -rf .
+      git commit --allow-empty -m "Initial gh-pages commit"
+      git push origin -u ${gh_pages_branch}
+      git checkout ${current_branch_name_bak} # 回到之前的分支
+      git worktree add ${gh_pages_branch} ${gh_pages_branch}
+    fi
+
+    # 复制文档
+    rsync -av --delete --exclude='.git' ${docs_dir} ${gh_pages_branch}
+
+    # 提交更改
+    cd ${gh_pages_branch}
+    git add --all
+    git commit -m "Update documentation $(date +'%Y-%m-%d %H:%M:%S')"
+    git push origin ${gh_pages_branch}
+    cd -
+}
+
+function cleanup_for_doc() {
+    git worktree remove ${gh_pages_branch}
+    rm -rf ${docs_dir} ${gh_pages_branch}
+}
+
+cd $app_dir         && \
+build_doc           && \
+convert_doc         && \
+prepare_index_page  && \
+push_to_gh_pages    && \
+cleanup_for_doc     && \
+echo "✅ Documentation published to GitHub Pages branch!"
