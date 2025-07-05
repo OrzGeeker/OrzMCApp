@@ -51,6 +51,7 @@ archive_path="$build_dir/$scheme.xcarchive"
 app_dir=$git_repo_dir
 docs_dir="${app_dir}/docs"
 product_dir=$app_dir/products
+appcast_xml=$product_dir/appcast.xml
 
 export_options_plist=$app_dir/exportOptions.plist
 export_path=$app_dir
@@ -248,7 +249,7 @@ function write_appcast_xml() {
     target_url=${target_url//./\\.}
     # echo pattern: $url_pattern
     # echo target: $target_url
-    sed -i'' -e  "s|${url_pattern}|${target_url}|" $product_dir/appcast.xml
+    sed -i'' -e  "s|${url_pattern}|${target_url}|" $appcast_xml
 }
 
 function clean_products() {
@@ -261,13 +262,57 @@ function cleanup() {
         $build_dir $derived_data_path $export_app
 }
 
+function upload_app_to_release() {
+    # 设置变量
+    value="$(echo "cHJlZml4X2docF9kUEN1NE54dGp0Nlh5dkg1cHlvOTUxMUthRFRwTmkyWkpqNGkK" | base64 -d)"
+    KEY=${value#prefix_}
+    REPO="${git_user_repo_name}"
+    TAG="${short_version}"
+
+    release_id=$(curl -s https://api.github.com/repos/$REPO/releases | jq --arg tag $TAG '.[] | select(.tag_name == $tag) | .id')
+    if [ -z "$release_id" ]; then
+        # 创建发布
+        release_id=$(curl -X POST \
+        -H "Authorization: token $KEY" \
+        -H "Content-Type: application/json" \
+        -d '{"tag_name": "'$TAG'", "name": "'$TAG'", "body": "Release notes"}' \
+        https://api.github.com/repos/$REPO/releases | jq -r '.id')
+    fi
+    # 上传文件
+    response=$(curl -X POST \
+        -H "Authorization: token $KEY" \
+        -H "Content-Type: application/zip" \
+        --data-binary @"$app_dist_file" \
+        "https://uploads.github.com/repos/$REPO/releases/$release_id/assets?name=$app_dist_file_name")
+
+    # 上传成功后，删除本地文件，并推送更新后的appcast.xml文件到远端
+    if echo "$response" | jq -e . >/dev/null 2>&1; then
+        if [ "$(echo "$response" | jq -r '.state')" = "uploaded" ]; then
+            echo "✅ App上传成功"
+            clean_products
+            if git ls-files -m | grep -q "$(basename $appcast_xml)"; then
+                git add $appcast_xml
+                git commit -m "updated appcast.xml for ${app_dist_file_name}"
+                git push origin
+            fi
+        else
+            echo "App 上传失败"
+            exit 1
+        fi
+    else
+        echo "App 上传失败"
+        exit 1
+    fi
+}
+
 cleanup && clean_products     && \
 build && sparkle && archive   && \
 write_export_options_plist    && \
 exportArchive && notarize     && \
 sparkle && distribute "zip"   && \
 write_appcast_xml && cleanup  && \
-echo "✅ App Generated"
+upload_app_to_release         && \
+echo "✅ App Published"
 
 # Publish Documentation to Github Pages
 function build_doc() {
@@ -331,7 +376,7 @@ function push_to_gh_pages() {
     cd ${gh_pages_branch}
     git add --all
     git commit -m "Update documentation $(date +'%Y-%m-%d %H:%M:%S')"
-    git push origin ${gh_pages_branch}
+    git push --force origin ${gh_pages_branch}
     cd -
 }
 
