@@ -331,7 +331,7 @@ function push_to_gh_pages() {
     cd ${gh_pages_branch}
     git add --all
     git commit -m "Update documentation $(date +'%Y-%m-%d %H:%M:%S')"
-    git push origin ${gh_pages_branch}
+    git push --force origin ${gh_pages_branch}
     cd -
 }
 
