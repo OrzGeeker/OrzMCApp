@@ -385,10 +385,10 @@ function cleanup_for_doc() {
     rm -rf ${docs_dir} ${gh_pages_branch}
 }
 
-# cd $app_dir         && \
-# build_doc           && \
-# convert_doc         && \
-# prepare_index_page  && \
-# push_to_gh_pages    && \
-# cleanup_for_doc     && \
-# echo "✅ Documentation published to GitHub Pages branch!"
+cd $app_dir         && \
+build_doc           && \
+convert_doc         && \
+prepare_index_page  && \
+push_to_gh_pages    && \
+cleanup_for_doc     && \
+echo "✅ Documentation published to GitHub Pages branch!"
