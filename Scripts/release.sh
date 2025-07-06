@@ -157,7 +157,7 @@ function sparkle() {
         # save private key into local keychain
         sparkle_generate_private_key=sparkle_private_key
         if [ -f $sparkle_generate_private_key ]; then
-            rm -f $sparkle_generate_private_key
+            remove $sparkle_generate_private_key
         fi
         $sparkle_generate_keys -x $sparkle_generate_private_key
         $sparkle_generate_keys -f $sparkle_generate_private_key
@@ -326,17 +326,19 @@ function upload_app_to_release() {
     fi
 }
 
-cleanup                       && \
-clean_products                && \
-build && sparkle && archive   && \
-write_export_options_plist    && \
-exportArchive && notarize     && \
-sparkle && distribute "zip"   && \
-write_appcast_xml             && \
-upload_app_to_release         && \
-clean_products                && \
-cleanup                       && \
-echo "✅ App Published"
+function release_app() {
+    cleanup                       && \
+    clean_products                && \
+    build && sparkle && archive   && \
+    write_export_options_plist    && \
+    exportArchive && notarize     && \
+    sparkle && distribute "zip"   && \
+    write_appcast_xml             && \
+    upload_app_to_release         && \
+    clean_products                && \
+    cleanup                       && \
+    echo "✅ App Published"
+}
 
 # Publish Documentation to Github Pages
 function build_doc() {
@@ -355,7 +357,7 @@ function convert_doc() {
       "$DOCCARCHIVE_PATH"                                   \
       --output-path ${docs_dir}                             \
       --hosting-base-path /${git_repo_name}                 \
-      && rm -rf ${derived_data_path}
+      && remove ${derived_data_path}
 }
 
 function prepare_index_page() {
@@ -402,17 +404,64 @@ function push_to_gh_pages() {
     git commit -m "Update documentation $(date +'%Y-%m-%d %H:%M:%S')"
     git push --force origin ${gh_pages_branch}
     cd -
+    # 移除worktree目录
+    git worktree remove ${gh_pages_branch}
 }
 
 function cleanup_for_doc() {
-    git worktree remove ${gh_pages_branch}
-    rm -rf ${docs_dir} ${gh_pages_branch}
+    remove ${docs_dir} ${gh_pages_branch}
 }
 
-cd $app_dir         && \
-build_doc           && \
-convert_doc         && \
-prepare_index_page  && \
-push_to_gh_pages    && \
-cleanup_for_doc     && \
-echo "✅ Documentation published to GitHub Pages branch!"
+
+function release_doc() {
+    cd $app_dir         && \
+    cleanup_for_doc     && \
+    build_doc           && \
+    convert_doc         && \
+    prepare_index_page  && \
+    push_to_gh_pages    && \
+    cleanup_for_doc     && \
+    echo "✅ Documentation published to GitHub Pages branch!"
+}
+
+function print_usage() {
+    echo "Usage: release.sh <[doc|app|all]>"
+    echo
+    echo "  doc - release doc only"
+    echo "  app - release app only"
+    echo "  all - release app & doc"
+    echo 
+    echo "notice: 'release.sh' with no argument is equal to 'release.sh all'"
+}
+
+function release() {
+    case "$1" in
+    app)
+        echo Release App Only
+        release_app
+    ;;
+    doc)
+        echo Release Doc Only
+        release_doc
+    ;;
+    all)
+        echo "Release App & Doc"
+        release_app && release_doc
+    ;;
+    *)
+        print_usage
+    ;;
+    esac
+}
+
+
+
+function main() {
+    if [ $# -eq 0 ]; then
+        release all
+    else
+        release $@
+    fi
+}
+
+main $@
