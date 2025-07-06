@@ -284,6 +284,13 @@ function upload_app_to_release() {
     REPO="${git_user_repo_name}"
     TAG="${short_version}"
 
+    if git ls-remote --tags origin refs/tags/"$TAG" | grep -q "$TAG"; then
+        echo "tag: $TAG exist"
+    else
+        git tag $TAG && git push origin $TAG
+        exit_if_error create tag: $TAG failed
+    fi
+
     release_id=$(curl -s https://api.github.com/repos/$REPO/releases | jq --arg tag $TAG '.[] | select(.tag_name == $tag) | .id')
     if [ -z "$release_id" ]; then
         echo create release for $TAG
