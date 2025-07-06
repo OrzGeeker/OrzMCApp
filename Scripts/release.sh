@@ -1,18 +1,19 @@
 #!/usr/bin/env bash
 #-*- coding: utf-8 -*-
 
-# parameters
+# 脚本参数区
 scheme=OrzMC
 team_id=2N62934Y28
 configuration=Release
 destination="generic/platform=macOS"
 gh_pages_branch="gh-pages"
 
+
 apple_id="824219521@qq.com"
 app_specific_password="bbgb-nzuk-trqz-uzax"
 notary_timeout_duration="5m"
 
-# path defination
+# git仓库信息获取
 git_repo_dir=$(git rev-parse --show-toplevel)
 git_url=$(git remote get-url origin)
 extract_repo_name() {
@@ -45,14 +46,16 @@ extract_user_repo() {
     echo "${url#*/}"
 }
 git_user_repo_name=$(extract_user_repo ${git_url})
+
+# 构建相关路径获取
 derived_data_path="$git_repo_dir/DerivedData"
 build_dir=$git_repo_dir/build
 archive_path="$build_dir/$scheme.xcarchive"
 app_dir=$git_repo_dir
 docs_dir="${app_dir}/docs"
 product_dir=$app_dir/products
-appcast_xml=$product_dir/appcast.xml
 
+# 打包相关配置
 export_options_plist=$app_dir/exportOptions.plist
 export_path=$app_dir
 export_app=$export_path/$scheme.app
@@ -62,21 +65,38 @@ plistBuddyBin=/usr/libexec/PlistBuddy
 app_info_plist="$export_app/Contents/Info.plist"
 
 sparkle_bin=$derived_data_path/SourcePackages/artifacts/sparkle/Sparkle/bin
+appcast_xml=$product_dir/appcast.xml
 
 # Publish App
+function exit_if_error() {
+    if [ $? -ne 0 ]; then
+        if [ "$#" -gt 0 ]; then
+            echo 🔴 $@
+        fi
+        exit -1
+    fi
+}
+
+function exit_with_msg() {
+    if [ "$#" -gt 0 ]; then
+        echo 🔴 $@
+        exit -1
+    fi
+}
+
 function remove() {
     for path in $*
     do
         # remove dir if exist
         if [ -d $path ]; then
             rm -rf $path
-            echo removed dir: $path
+            echo 📂 removed dir: $path
         fi
 
         # remove file if exist
         if [ -f $path ]; then
             rm -f $path
-            echo removed file: $path
+            echo 📄 removed file: $path
         fi
     done
 }
@@ -85,20 +105,14 @@ function zip() {
     local source=$1
     local target=$2
     ditto -c -k --sequesterRsrc --keepParent $source $target
-    if [ $? -ne 0 ]; then
-        echo create zip failed!
-        exit -1
-    fi
+    exit_if_error create zip failed!
 }
 
 function tarxz() {
     local source=$1
     local target=$2
     tar -C $export_path -cJf $target $source
-    if [ $? -ne 0 ]; then
-        echo create tar.xz failed!
-        exit -1
-    fi
+    exit_if_error create tar.xz failed!
 }
 
 function build() {
@@ -111,14 +125,14 @@ function build() {
         -configuration $configuration       \
         -destination "$destination"         \
         -derivedDataPath $derived_data_path
+    exit_if_error build $scheme on $destination failed!
 }
 
 function sparkle() {
     cd $app_dir
     local app_info_plist="$app_dir/$(xcrun xcodebuild -showBuildSettings | grep -e ".plist" | grep -e INFOPLIST_FILE | cut -d '=' -f 2 | xargs)"
     if [ ! -f $app_info_plist ]; then
-        echo info.plist file not found
-        exit -1
+        exit_with_msg info.plist file not found
     fi
 
     sparkle_SUFeedURL=$($plistBuddyBin -c "Print SUFeedURL" "$app_info_plist")
@@ -171,6 +185,7 @@ function archive() {
         -destination "$destination"         \
         -derivedDataPath $derived_data_path \
         -archivePath $archive_path
+    exit_if_error archive $scheme on $destination failed
 }
 
 function write_export_options_plist() {
@@ -194,6 +209,7 @@ function exportArchive() {
         -archivePath $archive_path                  \
         -exportOptionsPlist $export_options_plist   \
         -exportPath $export_path
+    exit_if_error export archive failed
 }
 
 function notarize() {
@@ -208,6 +224,7 @@ function notarize() {
     xcrun stapler staple $export_app             && \
     spctl -a -t exec -vv $export_app             && \
     remove $export_app_zip
+    exit_if_error notarize failed
 }
 
 function distribute() {
@@ -217,25 +234,20 @@ function distribute() {
     short_version=$($plistBuddyBin -c "Print CFBundleShortVersionString" "$app_info_plist")
     date=$(date +%Y%m%d_%H%M%S)
     app_dist_file="${product_dir}/${scheme}_${short_version}_${version}_${date}.${app_dist_file_ext}"
-
     case $app_dist_file_ext in
         "tar.xz")
             tarxz $(basename $export_app) $app_dist_file
+            echo create tar.xz file: $app_dist_file
             ;;
         "zip")
             zip $export_app $app_dist_file
+            echo create zip file: $app_dist_file
             ;;
         *)
             echo unsupportted file type
             ;;
     esac
-
-    if [ $? -ne 0 ]; then
-        echo create dist file with staple ticket failed!
-        exit -1
-    fi
-
-    echo dist file of app: $app_dist_file
+    exit_if_error create dist file with staple ticket failed!
 }
 
 function write_appcast_xml() {
@@ -250,6 +262,7 @@ function write_appcast_xml() {
     # echo pattern: $url_pattern
     # echo target: $target_url
     sed -i'' -e  "s|${url_pattern}|${target_url}|" $appcast_xml
+    exit_if_error write appcast.xml failed
 }
 
 function clean_products() {
@@ -259,7 +272,9 @@ function clean_products() {
 function cleanup() {
     remove $app_dir/*.zip       \
         *.plist *.log           \
-        $build_dir $derived_data_path $export_app
+        $build_dir              \
+        $derived_data_path      \
+        $export_app
 }
 
 function upload_app_to_release() {
@@ -271,7 +286,7 @@ function upload_app_to_release() {
 
     release_id=$(curl -s https://api.github.com/repos/$REPO/releases | jq --arg tag $TAG '.[] | select(.tag_name == $tag) | .id')
     if [ -z "$release_id" ]; then
-        # 创建发布
+        echo create release for $TAG
         release_id=$(curl -X POST \
         -H "Authorization: token $KEY" \
         -H "Content-Type: application/json" \
@@ -279,6 +294,7 @@ function upload_app_to_release() {
         https://api.github.com/repos/$REPO/releases | jq -r '.id')
     fi
     # 上传文件
+    echo upload zip file: $app_dist_file
     response=$(curl -X POST \
         -H "Authorization: token $KEY" \
         -H "Content-Type: application/zip" \
@@ -289,29 +305,30 @@ function upload_app_to_release() {
     if echo "$response" | jq -e . >/dev/null 2>&1; then
         if [ "$(echo "$response" | jq -r '.state')" = "uploaded" ]; then
             echo "✅ App上传成功"
-            clean_products
             if git ls-files -m | grep -q "$(basename $appcast_xml)"; then
                 git add $appcast_xml
                 git commit -m "updated appcast.xml for ${app_dist_file_name}"
                 git push origin
+                exit_if_error update appcast.xml failed 
             fi
         else
-            echo "App 上传失败"
-            exit 1
+            exit_with_msg "App 上传失败"
         fi
     else
-        echo "App 上传失败"
-        exit 1
+        exit_with_msg "App 上传失败"
     fi
 }
 
-cleanup && clean_products     && \
+cleanup                       && \
+clean_products                && \
 build && sparkle && archive   && \
 write_export_options_plist    && \
 exportArchive && notarize     && \
 sparkle && distribute "zip"   && \
-write_appcast_xml && cleanup  && \
+write_appcast_xml             && \
 upload_app_to_release         && \
+clean_products                && \
+cleanup                       && \
 echo "✅ App Published"
 
 # Publish Documentation to Github Pages
@@ -370,7 +387,7 @@ function push_to_gh_pages() {
     fi
 
     # 复制文档
-    rsync -av --delete --exclude='.git' ${docs_dir} ${gh_pages_branch}
+    rsync -a --delete --exclude='.git' ${docs_dir} ${gh_pages_branch}
 
     # 提交更改
     cd ${gh_pages_branch}
