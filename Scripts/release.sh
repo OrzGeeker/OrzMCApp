@@ -334,7 +334,7 @@ echo "✅ App Published"
 # Publish Documentation to Github Pages
 function build_doc() {
     echo "Building documentation..."
-    xcodebuild docbuild             \
+    xcrun xcodebuild docbuild       \
         -quiet                      \
         -scheme ${scheme}           \
         -destination ${destination} \
