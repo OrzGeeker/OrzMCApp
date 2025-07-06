@@ -304,7 +304,7 @@ function upload_app_to_release() {
     # 上传成功后，删除本地文件，并推送更新后的appcast.xml文件到远端
     if echo "$response" | jq -e . >/dev/null 2>&1; then
         if [ "$(echo "$response" | jq -r '.state')" = "uploaded" ]; then
-            echo "✅ App上传成功"
+            echo "App上传成功"
             if git ls-files -m | grep -q "$(basename $appcast_xml)"; then
                 git add $appcast_xml
                 git commit -m "updated appcast.xml for ${app_dist_file_name}"
