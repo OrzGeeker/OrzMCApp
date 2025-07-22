@@ -8,7 +8,7 @@
             <sparkle:version>23</sparkle:version>
             <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <enclosure url="https://github.com/OrzGeeker/OrzMCApp/releases/download/0.1.1/OrzMC_0.1.1_23_20250706_130445.zip" length="6558559" type="application/octet-stream" sparkle:edSignature="Q/ibYHCKh8APPsgOsbxRyn+r87SseXH2cMVu4r4P0udxJAvT3704n6SYWkjynDISSsa9HdqUHEtolBzF/QJ0CQ=="/>
+            <enclosure url="https://github.com/OrzGeeker/OrzMCApp/releases/download/0.1.1/OrzMC_0.1.1_23_20250723_030336.zip" length="6636179" type="application/octet-stream" sparkle:edSignature="6t3iRqHr+WGfZLl6UyY7x0dLcLle0zt1fZbtA1cH+Bb1lt46hQwBHhxPJXq0ofN+o576kVXiwnCQCmaPbNiQBQ=="/>
         </item>
         <item>
             <title>0.1.0</title>
