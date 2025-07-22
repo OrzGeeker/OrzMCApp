@@ -1,5 +1,5 @@
 {
-  "originHash" : "804e912caad9a06e50f89e422a3e49a63ec6d9130bad31c9c332193f34c23417",
+  "originHash" : "1e5028bb409a88cce6d6b166db049f883cf943983c1a37f2cd7377a97edd60da",
   "pins" : [
     {
       "identity" : "alamofire",
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OrzGeeker/OrzMCKit.git",
       "state" : {
-        "revision" : "1d5eb93f6cde3f1b92810a27ff67263c37350be1",
-        "version" : "0.0.1"
+        "revision" : "50c45eb038c397e2d81997208f004916f9456d75",
+        "version" : "0.0.2"
       }
     },
     {
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/wangzhizhou/PaperMC.git",
       "state" : {
-        "revision" : "beafe3e5f403df5497639ca2e12efe6262e1475b",
-        "version" : "0.0.7"
+        "revision" : "756f25569e4830935c717660d3647b444fe0ed95",
+        "version" : "0.0.8"
       }
     },
     {
@@ -213,8 +213,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-openapi-generator.git",
       "state" : {
-        "revision" : "755c0ec69bd667aa4e8ba50c8b710585d302879e",
-        "version" : "1.7.1"
+        "revision" : "f876c5af4beef7061f67cc2963232cbe6c7e5310",
+        "version" : "1.10.0"
       }
     },
     {
@@ -231,8 +231,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-openapi-urlsession.git",
       "state" : {
-        "revision" : "9bf4c712ad7989d6a91dbe68748b8829a50837e4",
-        "version" : "1.0.2"
+        "revision" : "6fac6f7c428d5feea2639b5f5c8b06ddfb79434b",
+        "version" : "1.1.0"
       }
     },
     {

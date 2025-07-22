@@ -843,7 +843,7 @@
 			repositoryURL = "https://github.com/OrzGeeker/OrzMCKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.1;
+				minimumVersion = 0.0.2;
 			};
 		};
 		F353DDDE2BFE600F0097986E /* XCRemoteSwiftPackageReference "OrzAppUpdater" */ = {

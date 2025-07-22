@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import PaperMCAPI
+import DownloadAPI
 import Game
 
 struct GUIServer: Server, Sendable {
@@ -32,7 +32,10 @@ struct GUIServer: Server, Sendable {
         
         let version = serverInfo.version
         
-        guard let (build, name, _) = try await client.latestBuildApplication(project: .paper, version: version)
+        guard let (build, name, _, _, _) = try await client.latestBuildInfo(
+            project: DownloadAPIClient.Project.paper,
+            version: version
+        )
         else {
             return nil
         }
@@ -46,25 +49,32 @@ struct GUIServer: Server, Sendable {
         let jarFileURL = dirURL.appending(path: name)
         
         if !FileManager.default.fileExists(atPath: jarFileURL.path()) {
-            guard let (jar, total) = try await client.downloadLatestBuild(project: .paper,
-                                                                          version: version,
-                                                                          build: build,
-                                                                          name: name)
+            guard let (dataStream, total) = try await client.downloadBuild(
+                project: DownloadAPIClient.Project.paper,
+                version: version,
+                build: build,
+                bufferSize: 512 * 1024
+            )
             else {
                 return nil
             }
             
             var jarData = Data()
             var progress: Double = 0
-            for try await byteChunk in jar {
-                jarData.append(Data(byteChunk))
-                let curProgress = Double(jarData.count) / Double(total)
-                let delta = curProgress - progress
-                if delta > 0.01 || curProgress == 1 {
-                    progress = curProgress
-                    await MainActor.run {
-                        self.gameModel.updateProgress(curProgress)
+            for try await byteChunkResult in dataStream {
+                switch byteChunkResult {
+                case .success(let byteChunk):
+                    jarData.append(Data(byteChunk))
+                    let curProgress = Double(jarData.count) / Double(total)
+                    let delta = curProgress - progress
+                    if delta > 0.01 || curProgress == 1 {
+                        progress = curProgress
+                        await MainActor.run {
+                            self.gameModel.updateProgress(curProgress)
+                        }
                     }
+                case .failure(let error):
+                    throw error
                 }
             }
             
@@ -85,5 +95,5 @@ struct GUIServer: Server, Sendable {
         return process
     }
     
-    private let client = PaperMCAPI()
+    private let client = DownloadAPIClient()
 }
