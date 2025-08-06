@@ -2,4 +2,4 @@
 
 App used on MacOS/iOS
 
-[Documentation](orzgeeker.github.io/OrzMCApp/)
+[Documentation](https://orzgeeker.github.io/OrzMCApp/)
