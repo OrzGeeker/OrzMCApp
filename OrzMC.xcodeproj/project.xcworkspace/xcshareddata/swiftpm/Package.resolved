@@ -105,8 +105,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OrzGeeker/OrzSwiftKit.git",
       "state" : {
-        "revision" : "c928ac3078069362e9779c1466ad3314c63032a3",
-        "version" : "0.0.13"
+        "revision" : "9b6f018d0804bc27c74ec097603a36c19e17bb66",
+        "version" : "0.0.14"
       }
     },
     {

@@ -867,7 +867,7 @@
 			repositoryURL = "https://github.com/OrzGeeker/OrzSwiftKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 0.0.12;
+				minimumVersion = 0.0.14;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
