@@ -67,6 +67,8 @@ final class GameModel {
     var isShowKillAllServerButton: Bool = false
     
     var serverPluginDownloadProgress: Float = 0
+    
+    var serverPluginDownloadProgressTitle: String = ""
 }
 
 extension GameModel {
@@ -264,14 +266,17 @@ extension GameModel {
             let plugin = PaperPlugin()
             let allPlugins = try await plugin.allPlugin()
             var downloadedPluginCount = 0
+            let pluginTotalCount = allPlugins.count
             for plugin in allPlugins {
                 downloadedPluginCount += 1
-                serverPluginDownloadProgress = Float(downloadedPluginCount) / Float(allPlugins.count)
-                guard let downloadItem = try await plugin.downloadItem(outputFileDirURL: outputDirFileURL, version: nil)
+                guard let downloadItem = try await plugin.downloadItem(outputFileDirURL: outputDirFileURL, version: nil),
+                      let pluginName = plugin.name
                 else {
                     continue
                 }
+                serverPluginDownloadProgressTitle = "\(pluginName)(\(downloadedPluginCount)/\(pluginTotalCount))"
                 try await Downloader.download(downloadItem)
+                serverPluginDownloadProgress = Float(downloadedPluginCount) / Float(allPlugins.count)
             }
             await Shell.runCommand(with: ["open", outputDirFileURL.path])
             serverPluginDownloadProgress = 0

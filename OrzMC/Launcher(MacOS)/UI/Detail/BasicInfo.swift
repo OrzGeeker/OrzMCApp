@@ -83,8 +83,13 @@ struct BasicInfo: View {
                                     }
                                 }
                                 if (model.serverPluginDownloadProgress > 0) {
-                                    ProgressView(value: model.serverPluginDownloadProgress)
-                                        .progressViewStyle(.linear)
+                                    HStack {
+                                        Text(model.serverPluginDownloadProgressTitle)
+                                        Spacer()
+                                        ProgressView(value: model.serverPluginDownloadProgress)
+                                            .progressViewStyle(.linear)
+                                    }
+                                        
                                 }
                             }
                         }
