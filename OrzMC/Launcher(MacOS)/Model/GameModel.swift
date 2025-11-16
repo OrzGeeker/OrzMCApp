@@ -65,6 +65,8 @@ final class GameModel {
     static var serverPIDMap = [String: String]()
     
     var isShowKillAllServerButton: Bool = false
+    
+    var serverPluginDownloadProgress: Float = 0
 }
 
 extension GameModel {
@@ -241,5 +243,40 @@ extension GameModel {
 
     func updateProgress(_ progress: Double) {
         self.progress = progress
+    }
+    
+    func downloadAllServerPlugins() async throws {
+        do {
+            if (serverPluginDownloadProgress > 0) {
+                return
+            }
+            guard let version = selectedVersion?.id
+            else {
+                return
+            }
+            let serverPluginUpdateDirPath = GameDir.serverPluginUpdate(version: version, type: Game.GameType.paper.rawValue).dirPath
+            try serverPluginUpdateDirPath.makeDirIfNeed()
+            guard let outputDirFileURL = URL(string: serverPluginUpdateDirPath)
+            else {
+                return
+            }
+            serverPluginDownloadProgress = Float.leastNonzeroMagnitude
+            let plugin = PaperPlugin()
+            let allPlugins = try await plugin.allPlugin()
+            var downloadedPluginCount = 0
+            for plugin in allPlugins {
+                downloadedPluginCount += 1
+                serverPluginDownloadProgress = Float(downloadedPluginCount) / Float(allPlugins.count)
+                guard let downloadItem = try await plugin.downloadItem(outputFileDirURL: outputDirFileURL, version: nil)
+                else {
+                    continue
+                }
+                try await Downloader.download(downloadItem)
+            }
+            await Shell.runCommand(with: ["open", outputDirFileURL.path])
+            serverPluginDownloadProgress = 0
+        } catch {
+            serverPluginDownloadProgress = 0
+        }
     }
 }

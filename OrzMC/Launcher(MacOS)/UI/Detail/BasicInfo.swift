@@ -71,6 +71,23 @@ struct BasicInfo: View {
                             name: "Plugins",
                             path: serverPluginDirPath
                         )
+                        if let serverPluginUpdateDirPath {
+                            VStack(alignment: .leading) {
+                                FilePathEntry(
+                                    name: "PluginsUpdate",
+                                    path: serverPluginUpdateDirPath
+                                )
+                                .onLongPressGesture {
+                                    Task {
+                                        try await model.downloadAllServerPlugins()
+                                    }
+                                }
+                                if (model.serverPluginDownloadProgress > 0) {
+                                    ProgressView(value: model.serverPluginDownloadProgress)
+                                        .progressViewStyle(.linear)
+                                }
+                            }
+                        }
                     }
                 } header: {
                     FormSectionHeader(title: "Server") {
@@ -130,6 +147,14 @@ extension BasicInfo {
             return nil
         }
         return GameDir.serverPlugin(version: selectedVersion.id, type: GameType.paper.rawValue).dirPath
+    }
+    
+    var serverPluginUpdateDirPath: String? {
+        guard let selectedVersion = model.selectedVersion
+        else {
+            return nil
+        }
+        return GameDir.serverPluginUpdate(version: selectedVersion.id, type: GameType.paper.rawValue).dirPath
     }
     
     var clientDirPath: String? {
