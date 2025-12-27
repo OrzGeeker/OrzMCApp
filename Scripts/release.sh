@@ -3,15 +3,16 @@
 
 # 脚本参数区
 scheme=OrzMC
-team_id=2N62934Y28
 configuration=Release
 destination="generic/platform=macOS"
 gh_pages_branch="gh-pages"
 
 
-apple_id="824219521@qq.com"
-app_specific_password="bbgb-nzuk-trqz-uzax"
-notary_timeout_duration="5m"
+team_id=${TEAM_ID:?missing TEAM_ID}
+notary_timeout_duration=${NOTARY_TIMEOUT_DURATION:-5m}
+appstore_key_id=${APPSTORE_KEY_ID:?missing APPSTORE_KEY_ID}
+appstore_issuer_id=${APPSTORE_ISSUER_ID:?missing APPSTORE_ISSUER_ID}
+appstore_private_key=${APPSTORE_PRIVATE_KEY:?missing APPSTORE_PRIVATE_KEY}
 
 # git仓库信息获取
 git_repo_dir=$(git rev-parse --show-toplevel)
@@ -213,16 +214,19 @@ function exportArchive() {
 }
 
 function notarize() {
-    zip $export_app $export_app_zip              && \
-    xcrun notarytool submit                         \
-        --apple-id $apple_id                        \
-        --password $app_specific_password           \
-        --team-id $team_id                          \
-        --wait                                      \
-        --timeout $notary_timeout_duration          \
-        $export_app_zip                          && \
-    xcrun stapler staple $export_app             && \
-    spctl -a -t exec -vv $export_app             && \
+    zip $export_app $export_app_zip
+    key_file="AuthKey_${appstore_key_id}.p8"
+    echo "$appstore_private_key" | base64 -d > "$key_file"
+    xcrun notarytool submit \
+        --key "$key_file" \
+        --key-id "$appstore_key_id" \
+        --issuer "$appstore_issuer_id" \
+        --wait \
+        --timeout $notary_timeout_duration \
+        $export_app_zip
+    remove "$key_file"
+    xcrun stapler staple $export_app
+    spctl -a -t exec -vv $export_app
     remove $export_app_zip
     exit_if_error notarize failed
 }
@@ -278,11 +282,9 @@ function cleanup() {
 }
 
 function upload_app_to_release() {
-    # 设置变量
-    value="$(echo "cHJlZml4X2docF9kUEN1NE54dGp0Nlh5dkg1cHlvOTUxMUthRFRwTmkyWkpqNGkK" | base64 -d)"
-    KEY=${value#prefix_}
     REPO="${git_user_repo_name}"
     TAG="${short_version}"
+    KEY="${GITHUB_TOKEN:?missing GITHUB_TOKEN}"
 
     if git ls-remote --tags origin refs/tags/"$TAG" | grep -q "$TAG"; then
         echo "tag: $TAG exist"

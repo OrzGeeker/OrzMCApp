@@ -1,0 +1,49 @@
+name: Publish Docs
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  docs:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+      - name: Build documentation
+        run: |
+          mkdir -p DerivedData docs
+          xcrun xcodebuild docbuild \
+            -quiet \
+            -scheme OrzMC \
+            -destination "generic/platform=macOS" \
+            -skipPackagePluginValidation \
+            -skipMacroValidation \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            -derivedDataPath DerivedData
+          DOCCARCHIVE_PATH=$(find DerivedData -type d -name "OrzMC.doccarchive")
+          xcrun docc process-archive transform-for-static-hosting \
+            "$DOCCARCHIVE_PATH" \
+            --output-path docs \
+            --hosting-base-path "/${{ github.event.repository.name }}"
+          lowercase_scheme=$(echo "OrzMC" | tr '[:upper:]' '[:lower:]')
+          cat > docs/index.html <<EOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta http-equiv="refresh" content="0; url=/${{ github.event.repository.name }}/documentation/${lowercase_scheme}">
+          </head>
+          <body>
+              <p>Redirecting to <a href="/${{ github.event.repository.name }}/documentation/${lowercase_scheme}">documentation</a>...</p>
+          </body>
+          </html>
+          EOF
+      - name: Deploy to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: docs
+          clean: true
+          
