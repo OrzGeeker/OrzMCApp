@@ -178,6 +178,13 @@ jobs:
             if [ -x "$ALT" ]; then GEN="$ALT"; fi
           fi
           if [ ! -x "$GEN" ]; then echo "sparkle generate_keys not found"; exit 1; fi
+          # Setup ephemeral keychain to avoid interactive prompts
+          KEYCHAIN="sparkle_tmp.keychain-db"
+          PASS=$(openssl rand -base64 18)
+          security create-keychain -p "$PASS" "$KEYCHAIN"
+          security default-keychain -s "$KEYCHAIN"
+          security unlock-keychain -p "$PASS" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
           PRIV="sparkle_ed_private_key"
           echo "$SPARKLE_ED_PRIVATE_KEY" | base64 -d > "$PRIV"
           "$GEN" -f "$PRIV"
@@ -187,13 +194,23 @@ jobs:
           rm -f "$PRIV"
       - name: Generate appcast
         run: |
+          set -euo pipefail
           BIN="DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
           if [ ! -x "$BIN" ]; then
             ALT=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path "*/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast" -print -quit 2>/dev/null)
             if [ -x "$ALT" ]; then BIN="$ALT"; fi
           fi
           if [ ! -x "$BIN" ]; then echo "sparkle generate_appcast not found"; exit 1; fi
-          "$BIN" products
+          ( "$BIN" products ) & pid=$!
+          limit=300
+          while kill -0 $pid 2>/dev/null; do
+            if [ $limit -le 0 ]; then
+              echo "generate_appcast timed out"; kill -TERM $pid || true; sleep 5; kill -KILL $pid || true; exit 1
+            fi
+            sleep 1
+            limit=$((limit-1))
+          done
+          wait $pid
       - name: Update appcast enclosure URL
         run: |
           FILE="${{ steps.meta.outputs.dist_name }}"

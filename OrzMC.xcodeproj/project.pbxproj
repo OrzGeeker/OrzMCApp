@@ -113,7 +113,6 @@
 		2BA7F9952CA58DFD00ED2684 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
 		2BD03D782907F93200BE1D1F /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		2BD301EE29000B2C00993823 /* LauncherUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherUI.swift; sourceTree = "<group>"; };
-		2BEBE8E62E17FA900071B538 /* release.sh */ = {isa = PBXFileReference; lastKnownFileType = text.script.sh; path = release.sh; sourceTree = "<group>"; };
 		F30F00EC2BDBDF7000CAA802 /* GameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameView.swift; sourceTree = "<group>"; };
 		F30F00EE2BDC966900CAA802 /* GameModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameModel.swift; sourceTree = "<group>"; };
 		F30F00F02BDCC6D900CAA802 /* GUIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GUIClient.swift; sourceTree = "<group>"; };
@@ -181,7 +180,6 @@
 			children = (
 				2B8442F82E17D38800CB0EA0 /* README.md */,
 				2B1C799428FEAB0600D53658 /* OrzMC */,
-				2BEBE8E72E17FA900071B538 /* Scripts */,
 				2B1C799328FEAB0600D53658 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -350,14 +348,6 @@
 				F339F6302903FF53003CB50C /* Controller */,
 			);
 			path = "Launcher(MacOS)";
-			sourceTree = "<group>";
-		};
-		2BEBE8E72E17FA900071B538 /* Scripts */ = {
-			isa = PBXGroup;
-			children = (
-				2BEBE8E62E17FA900071B538 /* release.sh */,
-			);
-			path = Scripts;
 			sourceTree = "<group>";
 		};
 		F339F6302903FF53003CB50C /* Controller */ = {
