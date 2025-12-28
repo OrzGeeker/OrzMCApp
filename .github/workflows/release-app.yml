@@ -13,7 +13,6 @@ jobs:
         with:
           p12-file-base64: ${{ secrets.DEVELOPER_ID_CERT_P12 }}
           p12-password: ${{ secrets.DEVELOPER_ID_CERT_PASSWORD }}
-      - run: brew install jq
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -119,8 +118,9 @@ jobs:
             --timeout "${NOTARY_TIMEOUT_DURATION:-5m}" \
             --output-format json \
             "$ZIP")
-          STATUS=$(echo "$RESULT" | jq -r '.status')
-          ID=$(echo "$RESULT" | jq -r '.id')
+          echo "$RESULT" > notarization-result.json
+          STATUS=$(/usr/bin/plutil -extract status raw -o - notarization-result.json)
+          ID=$(/usr/bin/plutil -extract id raw -o - notarization-result.json)
           echo "Notarization status: $STATUS, id: $ID"
           if [ "$STATUS" != "Accepted" ] || [ -z "$ID" ] || [ "$ID" = "null" ]; then
             echo "$RESULT"
@@ -130,6 +130,7 @@ jobs:
             fi
             echo "Notarization not accepted"; exit 1
           fi
+          rm -f notarization-result.json
           rm -f "$KEY_FILE" "$ZIP"
           # Staple with retries to handle propagation delay
           ATTEMPTS=10
@@ -184,13 +185,22 @@ jobs:
           INFO="build/mac-export/OrzMC.app/Contents/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $PUB" "$INFO" || /usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $PUB" "$INFO"
           rm -f "$PRIV"
-      - name: Generate and update appcast
-        uses: ./.github/actions/sparkle-appcast
-        with:
-          products_path: products
-          dist_name: ${{ steps.meta.outputs.dist_name }}
-          tag_name: ${{ steps.meta.outputs.short_version }}
-          derived_data_path: DerivedData
+      - name: Generate appcast
+        run: |
+          BIN="DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
+          if [ ! -x "$BIN" ]; then
+            ALT=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path "*/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast" -print -quit 2>/dev/null)
+            if [ -x "$ALT" ]; then BIN="$ALT"; fi
+          fi
+          if [ ! -x "$BIN" ]; then echo "sparkle generate_appcast not found"; exit 1; fi
+          "$BIN" products
+      - name: Update appcast enclosure URL
+        run: |
+          FILE="${{ steps.meta.outputs.dist_name }}"
+          URL="https://github.com/${{ github.repository }}/releases/download/${{ steps.meta.outputs.short_version }}/$FILE"
+          ESCAPED_FILE=$(printf "%s" "$FILE" | sed 's/\./\\./g')
+          ESCAPED_URL=$(printf "%s" "$URL" | sed 's/\./\\./g')
+          sed -i'' -e "s|https://.*$ESCAPED_FILE|$ESCAPED_URL|" products/appcast.xml
       - name: Commit appcast.xml
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

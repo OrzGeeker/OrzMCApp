@@ -28,18 +28,9 @@ jobs:
             "$DOCCARCHIVE_PATH" \
             --output-path docs \
             --hosting-base-path "/${{ github.event.repository.name }}"
+          touch docs/.nojekyll
           lowercase_scheme=$(echo "OrzMC" | tr '[:upper:]' '[:lower:]')
-          cat > docs/index.html <<EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <meta http-equiv="refresh" content="0; url=/${{ github.event.repository.name }}/documentation/${lowercase_scheme}">
-          </head>
-          <body>
-              <p>Redirecting to <a href="/${{ github.event.repository.name }}/documentation/${lowercase_scheme}">documentation</a>...</p>
-          </body>
-          </html>
-          EOF
+          cp "docs/documentation/${lowercase_scheme}/index.html" "docs/index.html"
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
