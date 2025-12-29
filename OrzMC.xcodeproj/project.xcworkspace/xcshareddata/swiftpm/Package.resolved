@@ -69,8 +69,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/wangzhizhou/MojangAPI.git",
       "state" : {
-        "revision" : "aad74461dfd09019f9ac5c600c85cc8536dddfc5",
-        "version" : "0.1.0"
+        "revision" : "2fe2a5cd423f1ed0759a4c0d87e27dc59b3977b8",
+        "version" : "0.1.1"
       }
     },
     {
@@ -96,8 +96,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OrzGeeker/OrzMCKit.git",
       "state" : {
-        "revision" : "36b155753b6789fe8fbeb6defafd0d30e593757a",
-        "version" : "0.0.5"
+        "revision" : "4fb4ba8a467c229d35852d1512d8c5813f009db6",
+        "version" : "0.0.6"
       }
     },
     {
