@@ -155,7 +155,7 @@ jobs:
           INFO="build/mac-export/OrzMC.app/Contents/Info.plist"
           SHORT_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$INFO")
           BUILD_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$INFO")
-          DATE=$(date +%Y%m%d_%H%M%S)
+          DATE=$(TZ=Asia/Shanghai date +%Y%m%d_%H%M%S)
           DIST_NAME="OrzMC_${SHORT_VERSION}_${BUILD_VERSION}_${DATE}.zip"
           DIST_PATH="products/$DIST_NAME"
           echo "short_version=$SHORT_VERSION" >> $GITHUB_OUTPUT
@@ -166,32 +166,13 @@ jobs:
         run: |
           mkdir -p products
           ditto -c -k --sequesterRsrc --keepParent build/mac-export/OrzMC.app "${{ steps.meta.outputs.dist_path }}"
-      - name: Import Sparkle private key
+      - name: Prepare Sparkle private key file
         env:
           SPARKLE_ED_PRIVATE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
         run: |
           if [ -z "$SPARKLE_ED_PRIVATE_KEY" ]; then echo "Missing SPARKLE_ED_PRIVATE_KEY secret"; exit 1; fi
-          DERIVED="DerivedData"
-          GEN="$DERIVED/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys"
-          if [ ! -x "$GEN" ]; then
-            ALT=$(find "$HOME/Library/Developer/Xcode/DerivedData" -path "*/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_keys" -print -quit 2>/dev/null)
-            if [ -x "$ALT" ]; then GEN="$ALT"; fi
-          fi
-          if [ ! -x "$GEN" ]; then echo "sparkle generate_keys not found"; exit 1; fi
-          # Setup ephemeral keychain to avoid interactive prompts
-          KEYCHAIN="sparkle_tmp.keychain-db"
-          PASS=$(openssl rand -base64 18)
-          security create-keychain -p "$PASS" "$KEYCHAIN"
-          security default-keychain -s "$KEYCHAIN"
-          security unlock-keychain -p "$PASS" "$KEYCHAIN"
-          security set-keychain-settings -lut 21600 "$KEYCHAIN"
           PRIV="sparkle_ed_private_key"
           echo "$SPARKLE_ED_PRIVATE_KEY" | base64 -d > "$PRIV"
-          "$GEN" -f "$PRIV"
-          PUB=$("$GEN" -p | sed -n 's/.*<string>\(.*\)<\/string>.*/\1/p')
-          INFO="build/mac-export/OrzMC.app/Contents/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :SUPublicEDKey $PUB" "$INFO" || /usr/libexec/PlistBuddy -c "Add :SUPublicEDKey string $PUB" "$INFO"
-          rm -f "$PRIV"
       - name: Generate appcast
         run: |
           set -euo pipefail
@@ -201,16 +182,10 @@ jobs:
             if [ -x "$ALT" ]; then BIN="$ALT"; fi
           fi
           if [ ! -x "$BIN" ]; then echo "sparkle generate_appcast not found"; exit 1; fi
-          ( "$BIN" products ) & pid=$!
-          limit=300
-          while kill -0 $pid 2>/dev/null; do
-            if [ $limit -le 0 ]; then
-              echo "generate_appcast timed out"; kill -TERM $pid || true; sleep 5; kill -KILL $pid || true; exit 1
-            fi
-            sleep 1
-            limit=$((limit-1))
-          done
-          wait $pid
+          PRIV="sparkle_ed_private_key"
+          if [ ! -f "$PRIV" ]; then echo "Sparkle private key file missing"; exit 1; fi
+          "$BIN" --ed-key-file "$PRIV" products
+          rm -f "$PRIV"
       - name: Update appcast enclosure URL
         run: |
           FILE="${{ steps.meta.outputs.dist_name }}"
