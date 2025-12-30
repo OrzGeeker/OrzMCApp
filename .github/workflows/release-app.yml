@@ -200,22 +200,37 @@ jobs:
           git add products/appcast.xml
           git commit -m "Update appcast.xml for ${{ steps.meta.outputs.dist_name }}" || echo "No changes"
           git push
-      - name: Create GitHub release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Find or create release
+        id: find_or_create_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.meta.outputs.short_version }}
-          release_name: ${{ steps.meta.outputs.short_version }}
-          draft: false
-          prerelease: false
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.short_version }}"
+          REPO="$GITHUB_REPOSITORY"
+          resp=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/${REPO}/releases/tags/${TAG}" || true)
+          echo "$resp" > release.json
+          upload=$( /usr/bin/plutil -extract upload_url raw -o - release.json 2>/dev/null || true )
+          if [ -n "$upload" ]; then
+            echo "Found existing release for tag $TAG"
+            echo "upload_url=$upload" >> $GITHUB_OUTPUT
+          else
+            echo "Creating release for tag $TAG"
+            create=$(curl -s -X POST \
+              -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -d "{\"tag_name\":\"$TAG\",\"name\":\"$TAG\",\"draft\":false,\"prerelease\":false}" \
+              "https://api.github.com/repos/${REPO}/releases")
+            echo "$create" > release.json
+            upload=$( /usr/bin/plutil -extract upload_url raw -o - release.json )
+            echo "upload_url=$upload" >> $GITHUB_OUTPUT
+          fi
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ steps.find_or_create_release.outputs.upload_url }}
           asset_path: ${{ steps.meta.outputs.dist_path }}
           asset_name: ${{ steps.meta.outputs.dist_name }}
           asset_content_type: application/zip
