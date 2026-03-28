@@ -86,6 +86,10 @@ struct GameList: View {
                         if GameDir.server(version: version.id, type: GameType.paper.rawValue).dirPath.isExist() {
                             Image(systemName: "xserve")
                         }
+
+                        if GameDir.server(version: version.id, type: GameType.vanilla.rawValue).dirPath.isExist() {
+                            Image(systemName: "shippingbox")
+                        }
                         
                         Spacer()
                         

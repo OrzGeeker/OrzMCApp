@@ -18,6 +18,20 @@ struct SettingsView: View {
             GroupBox {
                 VStack(alignment: .leading) {
                     HStack {
+                        Text("服务端核心")
+                            .font(.headline)
+                        Spacer()
+                        Picker("", selection: $model.serverSoftware) {
+                            ForEach(SettingsModel.ServerSoftware.allCases) { software in
+                                Text(software.rawValue).tag(software)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                    
+                    Divider().padding(.vertical, 4)
+                    
+                    HStack {
                         Toggle(isOn: $model.enableJVMDebugger) {
                             Text("远程 JVM 调试")
                         }

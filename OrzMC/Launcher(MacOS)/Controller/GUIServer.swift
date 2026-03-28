@@ -8,12 +8,16 @@
 import Foundation
 import DownloadAPI
 import Game
+import MojangAPI
 
 struct GUIServer: Server, Sendable {
     
     let serverInfo: ServerInfo
     
-    let serverType: GameType = .paper
+    let serverType: GameType
+    
+    /// 用于 Vanilla 下载官方 server.jar 的 Mojang Version 元信息
+    let selectedVersion: Version
     
     let gameModel: GameModel
     
@@ -23,7 +27,7 @@ struct GUIServer: Server, Sendable {
         case .paper:
             return try await startPaperServer()
         case .vanilla:
-            return try await VanillaServer(serverInfo: serverInfo).start()
+            return try await startVanillaServer()
         }
     }
     
@@ -92,6 +96,69 @@ struct GUIServer: Server, Sendable {
             "--noconsole"
         ])
         
+        return process
+    }
+    
+    // MARK: Vanilla
+    public func startVanillaServer() async throws -> Process? {
+        
+        let versionId = serverInfo.version
+        let workDirectory = GameDir.server(version: versionId, type: GameType.vanilla.rawValue)
+        let serverJarFileDirPath = workDirectory.dirPath
+        
+        let dirURL = URL(filePath: serverJarFileDirPath)
+        if !FileManager.default.fileExists(atPath: dirURL.path()) {
+            try FileManager.default.createDirectory(at: dirURL, withIntermediateDirectories: true)
+        }
+        
+        // Mojang 官方 server.jar 下载地址来自 version json 的 downloads.server.url
+        let gameVersion = try await selectedVersion.gameVersion
+        guard let serverDownload = gameVersion?.downloads.server,
+              let serverURL = URL(string: serverDownload.url)
+        else {
+            return nil
+        }
+        
+        // 统一落盘为 server.jar，避免 Mojang URL 末尾文件名变动造成重复下载
+        let jarFileURL = dirURL.appending(path: "server.jar")
+        
+        if !FileManager.default.fileExists(atPath: jarFileURL.path()) {
+            await MainActor.run { self.gameModel.updateProgress(0) }
+            
+            let (dataStream, response) = try await URLSession.shared.bytes(from: serverURL)
+            let totalBytes = Int(response.expectedContentLength)
+            
+            var jarData = Data()
+            jarData.reserveCapacity(max(totalBytes, 0))
+            
+            var lastProgress: Double = 0
+            for try await byte in dataStream {
+                jarData.append(byte)
+                
+                guard totalBytes > 0 else { continue }
+                let curProgress = Double(jarData.count) / Double(totalBytes)
+                let delta = curProgress - lastProgress
+                if delta > 0.01 || curProgress == 1 {
+                    lastProgress = curProgress
+                    await MainActor.run {
+                        self.gameModel.updateProgress(curProgress)
+                    }
+                }
+            }
+            
+            try jarData.write(to: jarFileURL, options: .atomic)
+        }
+        
+        await MainActor.run {
+            self.gameModel.updateProgress(1)
+        }
+        
+        // Vanilla 通过 --nogui 关闭图形界面
+        let process = try await launchServer(
+            jarFileURL.path(),
+            workDirectory: workDirectory,
+            jarArgs: ["--nogui"]
+        )
         return process
     }
     

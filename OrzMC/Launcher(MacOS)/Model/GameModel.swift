@@ -69,6 +69,8 @@ final class GameModel {
     var serverPluginDownloadProgress: Float = 0
     
     var serverPluginDownloadProgressTitle: String = ""
+
+    var runningServerPids = Set<String>()
 }
 
 extension GameModel {
@@ -129,12 +131,19 @@ extension GameModel {
     }
     
     var selectedServerPID: String? {
-        guard isServer, let selectedVersion,
-              GameModel.serverPIDMap.keys.contains(selectedVersion.id)
+        guard isServer, let selectedVersion
         else {
             return nil
         }
-        return GameModel.serverPIDMap[selectedVersion.id]
+        return serverPID(versionId: selectedVersion.id, software: settingsModel.serverSoftware)
+    }
+
+    func isServerRunning(versionId: String, software: SettingsModel.ServerSoftware) -> Bool {
+        guard let pid = serverPID(versionId: versionId, software: software)
+        else {
+            return false
+        }
+        return runningServerPids.contains(pid)
     }
 }
 
@@ -223,24 +232,51 @@ extension GameModel {
             showJarHelpInfo: false,
             jarOptions: nil
         )
-        let launcher = GUIServer(serverInfo: serverInfo, gameModel: self)
+        let launcher = GUIServer(
+            serverInfo: serverInfo,
+            serverType: settingsModel.serverSoftware.gameType,
+            selectedVersion: selectedVersion,
+            gameModel: self
+        )
         guard let process = try await launcher.start()
         else {
             return
         }
         let pid = String(process.processIdentifier)
-        GameModel.serverPIDMap[serverInfo.version] = pid
+        GameModel.serverPIDMap[serverKey(versionId: serverInfo.version, software: settingsModel.serverSoftware)] = pid
     }
     
     func checkRunningServer() {
-        let hasRunningServer = (try? !Shell.allRunningServerPids().isEmpty) ?? false
-        isShowKillAllServerButton = hasRunningServer
+        let pids = (try? Shell.allRunningServerPids()) ?? []
+        let running = Set(pids)
+        runningServerPids = running
+        if !GameModel.serverPIDMap.isEmpty {
+            GameModel.serverPIDMap = GameModel.serverPIDMap.filter { running.contains($0.value) }
+        }
+        isShowKillAllServerButton = !running.isEmpty
     }
     
     func stopAllRunningServer() {
         Task {
             try await Shell.stopAll()
         }
+    }
+
+    func serverPID(versionId: String, software: SettingsModel.ServerSoftware) -> String? {
+        GameModel.serverPIDMap[serverKey(versionId: versionId, software: software)]
+    }
+
+    func stopServer(versionId: String, software: SettingsModel.ServerSoftware) {
+        guard let pid = serverPID(versionId: versionId, software: software)
+        else {
+            return
+        }
+        _ = try? Shell.runCommand(with: ["kill", pid])
+        GameModel.serverPIDMap.removeValue(forKey: serverKey(versionId: versionId, software: software))
+    }
+
+    func serverKey(versionId: String, software: SettingsModel.ServerSoftware) -> String {
+        "\(versionId)#\(software.rawValue)"
     }
 
     func updateProgress(_ progress: Double) {

@@ -14,9 +14,35 @@ struct FormSectionHeader: View {
     let title: String
     var deleteBtnAction: ButtonAction
     typealias ButtonAction = () -> Void
+    var stopBtnAction: ButtonAction?
+    var statusText: String?
+    var statusDotColor: Color?
+    var statusTextColor: Color?
     var body: some View {
         HStack {
             Text(title)
+            if let statusText {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(statusDotColor ?? Color.secondary)
+                        .frame(width: 6, height: 6)
+                    Text(statusText)
+                        .foregroundStyle(statusTextColor ?? Color.secondary)
+                }
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background((statusDotColor ?? Color.secondary).opacity(0.12))
+                .cornerRadius(8)
+                .padding(.leading, 6)
+            }
+            if let stopBtnAction {
+                Button(action: stopBtnAction) {
+                    Image(systemName: "stop.circle")
+                        .foregroundColor(Color.accentColor)
+                }
+                .buttonStyle(.plain)
+            }
             Button(action: deleteBtnAction) {
                 Image(systemName: "trash")
                     .foregroundColor(Color.red)
@@ -60,22 +86,27 @@ struct BasicInfo: View {
     var body: some View {
         
         Form {
-            if let serverDirPath, serverDirPath.isExist() {
+            let paperStatus = statusFor(software: .paper)
+            let vanillaStatus = statusFor(software: .vanilla)
+            let paperStopAction = stopActionFor(software: .paper)
+            let vanillaStopAction = stopActionFor(software: .vanilla)
+
+            if let paperServerDirPath, paperServerDirPath.isExist() {
                 Section {
                     FilePathEntry(
                         name: "Game",
-                        path: serverDirPath
+                        path: paperServerDirPath
                     )
-                    if let serverPluginDirPath {
+                    if let paperServerPluginDirPath {
                         FilePathEntry(
                             name: "Plugins",
-                            path: serverPluginDirPath
+                            path: paperServerPluginDirPath
                         )
-                        if let serverPluginUpdateDirPath {
+                        if let paperServerPluginUpdateDirPath {
                             VStack(alignment: .leading) {
                                 FilePathEntry(
                                     name: "PluginsUpdate",
-                                    path: serverPluginUpdateDirPath
+                                    path: paperServerPluginUpdateDirPath
                                 )
                                 .onLongPressGesture {
                                     Task {
@@ -95,11 +126,39 @@ struct BasicInfo: View {
                         }
                     }
                 } header: {
-                    FormSectionHeader(title: "Server") {
-                        try? serverDirPath.remove()
-                    }
+                    FormSectionHeader(
+                        title: "Server (Paper)",
+                        deleteBtnAction: {
+                            try? paperServerDirPath.remove()
+                        },
+                        stopBtnAction: paperStopAction,
+                        statusText: paperStatus.text,
+                        statusDotColor: paperStatus.dotColor,
+                        statusTextColor: paperStatus.textColor
+                    )
                 }
             }
+
+            if let vanillaServerDirPath, vanillaServerDirPath.isExist() {
+                Section {
+                    FilePathEntry(
+                        name: "Game",
+                        path: vanillaServerDirPath
+                    )
+                } header: {
+                    FormSectionHeader(
+                        title: "Server (Vanilla)",
+                        deleteBtnAction: {
+                            try? vanillaServerDirPath.remove()
+                        },
+                        stopBtnAction: vanillaStopAction,
+                        statusText: vanillaStatus.text,
+                        statusDotColor: vanillaStatus.dotColor,
+                        statusTextColor: vanillaStatus.textColor
+                    )
+                }
+            }
+
             if let clientDirPath, clientDirPath.isExist() {
                 Section {
                     FilePathEntry(
@@ -137,8 +196,31 @@ struct BasicInfo: View {
 }
 
 extension BasicInfo {
+
+    func statusFor(software: SettingsModel.ServerSoftware) -> (text: String, dotColor: Color, textColor: Color) {
+        guard let selectedVersion = model.selectedVersion
+        else {
+            return ("Unknown", .secondary, .secondary)
+        }
+        let running = model.isServerRunning(versionId: selectedVersion.id, software: software)
+        if running {
+            return ("Running", .green, .green)
+        }
+        return ("Stopped", .red, .secondary)
+    }
     
-    var serverDirPath: String? {
+    func stopActionFor(software: SettingsModel.ServerSoftware) -> FormSectionHeader.ButtonAction? {
+        guard let selectedVersion = model.selectedVersion,
+              model.isServerRunning(versionId: selectedVersion.id, software: software)
+        else {
+            return nil
+        }
+        return {
+            model.stopServer(versionId: selectedVersion.id, software: software)
+        }
+    }
+    
+    var paperServerDirPath: String? {
         guard let selectedVersion = model.selectedVersion
         else {
             return nil
@@ -146,7 +228,7 @@ extension BasicInfo {
         return GameDir.server(version: selectedVersion.id, type: GameType.paper.rawValue).dirPath
     }
     
-    var serverPluginDirPath: String? {
+    var paperServerPluginDirPath: String? {
         guard let selectedVersion = model.selectedVersion
         else {
             return nil
@@ -154,12 +236,20 @@ extension BasicInfo {
         return GameDir.serverPlugin(version: selectedVersion.id, type: GameType.paper.rawValue).dirPath
     }
     
-    var serverPluginUpdateDirPath: String? {
+    var paperServerPluginUpdateDirPath: String? {
         guard let selectedVersion = model.selectedVersion
         else {
             return nil
         }
         return GameDir.serverPluginUpdate(version: selectedVersion.id, type: GameType.paper.rawValue).dirPath
+    }
+    
+    var vanillaServerDirPath: String? {
+        guard let selectedVersion = model.selectedVersion
+        else {
+            return nil
+        }
+        return GameDir.server(version: selectedVersion.id, type: GameType.vanilla.rawValue).dirPath
     }
     
     var clientDirPath: String? {

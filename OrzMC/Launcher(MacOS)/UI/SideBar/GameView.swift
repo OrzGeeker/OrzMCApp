@@ -34,6 +34,7 @@ struct GameView: View {
     
     var body: some View {
         @Bindable var model = model
+        @Bindable var settings = model.settingsModel
         VStack(alignment: .leading) {
             GameList(
                 versions: $filteredVersions,
@@ -169,6 +170,21 @@ struct GameView: View {
                     }
                     .bold()
                     
+                    if model.isServer {
+                        HStack {
+                            Text("Server Core:")
+                                .font(.headline)
+                            Spacer()
+                            Picker("", selection: $settings.serverSoftware) {
+                                ForEach(SettingsModel.ServerSoftware.allCases) { software in
+                                    Text(software.rawValue).tag(software)
+                                }
+                            }
+                            .pickerStyle(.segmented)
+                        }
+                        .bold()
+                    }
+                    
                     if model.isClient {
                         HStack() {
                             Text("User Name:")
@@ -286,4 +302,3 @@ extension GameView {
         .frame(width: Constants.sidebarWidth, height: Constants.minHeight)
         .environment(GameModel())
 }
-

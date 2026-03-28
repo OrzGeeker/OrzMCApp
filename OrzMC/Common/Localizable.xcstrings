@@ -103,6 +103,9 @@
     "Server" : {
 
     },
+    "Server Core:" : {
+
+    },
     "Server Detail" : {
 
     },
@@ -137,6 +140,9 @@
 
     },
     "User Name:" : {
+
+    },
+    "服务端核心" : {
 
     },
     "远程 JVM 调试" : {
