@@ -180,7 +180,7 @@ struct GameView: View {
                                     Text(software.rawValue).tag(software)
                                 }
                             }
-                            .pickerStyle(.segmented)
+                            .pickerStyle(.menu)
                         }
                         .bold()
                     }
