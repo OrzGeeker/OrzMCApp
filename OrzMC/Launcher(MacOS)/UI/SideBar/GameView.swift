@@ -20,8 +20,6 @@ struct GameView: View {
     
     @FocusState private var usernameTextFieldFocused: Bool
     
-    @State private var enableStartGameButton: Bool = false
-    
     @State private var downloadingJDK: Bool = false
     
     @State private var downloadJDKProgress: Double = 0
@@ -170,10 +168,6 @@ struct GameView: View {
                         .pickerStyle(.menu)
                         .onChange(of: model.gameType) {
                             usernameTextFieldFocused = model.isClient
-                            refreshStartGameButton()
-                        }
-                        .onChange(of: usernameTextFieldFocused) {
-                            refreshStartGameButton()
                         }
                         .disabled(model.isLaunchingGame)
                     }
@@ -207,9 +201,6 @@ struct GameView: View {
                                 .autocorrectionDisabled()
                                 .textSelection(.disabled)
                                 .focused($usernameTextFieldFocused)
-                                .onChange(of: model.username) {
-                                    refreshStartGameButton()
-                                }
                                 .onSubmit {
                                     startGame()
                                 }
@@ -238,19 +229,16 @@ struct GameView: View {
                                 }
                             }
                         }
-                        .tint(enableStartGameButton ? Color.accentColor : .gray)
+                        .tint(model.canStartGame ? Color.accentColor : .gray)
                         .controlSize(.regular)
                         .buttonStyle(.borderedProminent)
-                        .disabled(!enableStartGameButton)
-                        .keyboardShortcut(.init(.init("b")), modifiers: .command)
+                        .disabled(!model.canStartGame)
+                        .help(model.canStartGame ? "Start \(model.gameType.rawValue)" : "Select a version and enter a user name to start")
                         Spacer()
                     }
                 }
                 .padding([.horizontal], 10)
                 .padding([.bottom], 20)
-                .onChange(of: model.isLaunchingGame) {
-                    refreshStartGameButton()
-                }
             }
         }
     }
@@ -259,24 +247,12 @@ struct GameView: View {
 extension GameView {
     
     func startGame() {
-        guard enableStartGameButton
+        guard model.canStartGame
         else {
             return
         }
         usernameTextFieldFocused = false
         model.startGame()
-    }
-    
-    func refreshStartGameButton() {
-        guard model.selectedVersion != nil
-        else {
-            enableStartGameButton = false
-            return
-        }
-        enableStartGameButton = !model.isFetchingGameVersions && !model.isLaunchingGame
-        if model.isClient {
-            enableStartGameButton = !model.username.isEmpty && enableStartGameButton
-        }
     }
     
     func reloadList() {

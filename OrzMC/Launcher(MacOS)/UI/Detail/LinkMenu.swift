@@ -26,8 +26,9 @@ struct LinkMenu: View {
             }
             .labelStyle(.titleAndIcon)
         } label: {
-            Image(systemName: "link")
+            Label("Links", systemImage: "link")
         }
+        .help("Open related links")
     }
 }
 

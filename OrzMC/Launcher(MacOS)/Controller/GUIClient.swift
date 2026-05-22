@@ -13,7 +13,7 @@ struct GUIClient: Client  {
     
     var clientInfo: Game.ClientInfo
     
-    let gameModel: GameModel
+    let progressHandler: LaunchProgressHandler
     
     mutating func start() async throws {
         
@@ -36,7 +36,7 @@ struct GUIClient: Client  {
             let delta = curProgress - progress
             if delta > 0.01 || curProgress == 1 {
                 progress = curProgress
-                await gameModel.updateProgress(progress)
+                await progressHandler(progress)
             }
         }
     }

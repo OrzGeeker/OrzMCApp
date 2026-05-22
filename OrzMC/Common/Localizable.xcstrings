@@ -22,10 +22,16 @@
     "by Aternos" : {
 
     },
+    "Cancel" : {
+
+    },
     "Clear Console" : {
 
     },
     "Console" : {
+
+    },
+    "Contact Author" : {
 
     },
     "Credit Pool Detail" : {
@@ -37,7 +43,10 @@
     "Current:" : {
 
     },
-    "Down" : {
+    "Delete" : {
+
+    },
+    "Delete %@ files" : {
 
     },
     "exaroton" : {
@@ -47,6 +56,9 @@
 
     },
     "Filter a version" : {
+
+    },
+    "Game" : {
 
     },
     "Game Version:" : {
@@ -70,6 +82,9 @@
     "Java Version" : {
 
     },
+    "Links" : {
+
+    },
     "Members" : {
 
     },
@@ -79,7 +94,13 @@
     "OK" : {
 
     },
+    "Open related links" : {
+
+    },
     "Operation Failed" : {
+
+    },
+    "OrzMC" : {
 
     },
     "Playlist" : {
@@ -91,7 +112,13 @@
     "Refresh Page" : {
 
     },
-    "Release Only" : {
+    "Refresh version list" : {
+
+    },
+    "Releases" : {
+
+    },
+    "Remote JVM Debugging" : {
 
     },
     "Remote Server" : {
@@ -106,10 +133,19 @@
     "Restart Server" : {
 
     },
+    "Reveal in Finder" : {
+
+    },
+    "Select a version and enter a user name to start" : {
+
+    },
     "Send Console Command" : {
 
     },
     "Server" : {
+
+    },
+    "Server Core" : {
 
     },
     "Server Core:" : {
@@ -124,10 +160,22 @@
     "Settings" : {
 
     },
+    "Show release versions only" : {
+
+    },
     "Start %@" : {
 
     },
     "Start Server" : {
+
+    },
+    "Stop" : {
+
+    },
+    "Stop %@" : {
+
+    },
+    "Stop all running Minecraft servers" : {
 
     },
     "Stop All Servers" : {
@@ -136,10 +184,13 @@
     "Stop Server" : {
 
     },
-    "TOKEN" : {
+    "Support" : {
 
     },
-    "Up" : {
+    "This removes files at %@. This action cannot be undone." : {
+
+    },
+    "TOKEN" : {
 
     },
     "URL为空" : {
@@ -149,12 +200,6 @@
 
     },
     "User Name:" : {
-
-    },
-    "服务端核心" : {
-
-    },
-    "远程 JVM 调试" : {
 
     }
   },

@@ -38,16 +38,20 @@ struct FormSectionHeader: View {
             }
             if let stopBtnAction {
                 Button(action: stopBtnAction) {
-                    Image(systemName: "stop.circle")
-                        .foregroundColor(Color.accentColor)
+                    Label("Stop", systemImage: "stop.circle")
+                        .labelStyle(.iconOnly)
                 }
                 .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+                .help("Stop \(title)")
             }
             Button(action: deleteBtnAction) {
-                Image(systemName: "trash")
-                    .foregroundColor(Color.red)
+                Label("Delete", systemImage: "trash")
+                    .labelStyle(.iconOnly)
             }
             .buttonStyle(.plain)
+            .foregroundStyle(.red)
+            .help("Delete \(title) files")
         }
     }
 }
@@ -70,17 +74,22 @@ struct FilePathEntry: View {
                 Button(action: {
                     _ = try? Shell.runCommand(with: ["open", "\(path)"])
                 }, label: {
-                    Image(systemName: path.isDirPath() ? "folder" : "doc.plaintext")
+                    Label("Reveal in Finder", systemImage: path.isDirPath() ? "folder" : "doc.plaintext")
+                        .labelStyle(.iconOnly)
                 })
                 .buttonStyle(.plain)
+                .help("Reveal in Finder")
             }
         }
+        .help(path)
     }
 }
 struct BasicInfo: View {
-    
+
     @Environment(GameModel.self) private var model
     
+    @State private var deleteTarget: DeleteTarget?
+
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
@@ -129,7 +138,7 @@ struct BasicInfo: View {
                     FormSectionHeader(
                         title: "Server (Paper)",
                         deleteBtnAction: {
-                            try? paperServerDirPath.remove()
+                            deleteTarget = .paper(path: paperServerDirPath)
                         },
                         stopBtnAction: paperStopAction,
                         statusText: paperStatus.text,
@@ -149,7 +158,7 @@ struct BasicInfo: View {
                     FormSectionHeader(
                         title: "Server (Vanilla)",
                         deleteBtnAction: {
-                            try? vanillaServerDirPath.remove()
+                            deleteTarget = .vanilla(path: vanillaServerDirPath)
                         },
                         stopBtnAction: vanillaStopAction,
                         statusText: vanillaStatus.text,
@@ -167,7 +176,7 @@ struct BasicInfo: View {
                     )
                 } header: {
                     FormSectionHeader(title: "Client") {
-                        try? clientDirPath.remove()
+                        deleteTarget = .client(path: clientDirPath)
                     }
                 }
             }
@@ -183,13 +192,57 @@ struct BasicInfo: View {
                     Button {
                         model.stopAllRunningServer()
                     } label: {
-                        Text("Stop All Servers")
-                            .foregroundStyle(Color.accentColor)
-                            .padding(4)
-                            .bold()
+                        Label("Stop All Servers", systemImage: "stop.circle")
                     }
                     .keyboardShortcut(.init(.init("k")), modifiers: .command)
+                    .help("Stop all running Minecraft servers")
                 }
+            }
+        }
+        .confirmationDialog(
+            deleteTarget?.confirmationTitle ?? "Delete Files?",
+            isPresented: Binding(
+                get: { deleteTarget != nil },
+                set: { if !$0 { deleteTarget = nil } }
+            ),
+            presenting: deleteTarget
+        ) { target in
+            Button("Delete", role: .destructive) {
+                try? target.path.remove()
+                deleteTarget = nil
+            }
+            Button("Cancel", role: .cancel) {
+                deleteTarget = nil
+            }
+        } message: { target in
+            Text("This removes files at \(target.path). This action cannot be undone.")
+        }
+    }
+}
+
+private extension BasicInfo {
+    enum DeleteTarget: Identifiable {
+        case paper(path: String)
+        case vanilla(path: String)
+        case client(path: String)
+
+        var id: String { path }
+
+        var path: String {
+            switch self {
+            case let .paper(path), let .vanilla(path), let .client(path):
+                path
+            }
+        }
+
+        var confirmationTitle: String {
+            switch self {
+            case .paper:
+                "Delete Paper Server Files?"
+            case .vanilla:
+                "Delete Vanilla Server Files?"
+            case .client:
+                "Delete Client Files?"
             }
         }
     }

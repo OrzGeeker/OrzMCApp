@@ -16,104 +16,73 @@ struct GameList: View {
     let canUseShortcut: Bool
     var body: some View {
         ScrollViewReader { proxy in
-            ZStack {
-                HStack {
-                    Button("Up") {
-                        guard canUseShortcut
-                        else {
-                            return
-                        }
-                        guard let selectedVersion, versions.contains(selectedVersion)
-                        else {
-                            selectedVersion = versions.first
-                            return
-                        }
-                        guard let index = versions.firstIndex(of: selectedVersion)
-                        else {
-                            return
-                        }
-                        let prevIndex = index - 1
-                        guard prevIndex >= versions.startIndex
-                        else {
-                            return
-                        }
-                        let prevVersion = versions[prevIndex]
-                        self.selectedVersion = prevVersion
-                    }
-                    .keyboardShortcut(.upArrow, modifiers: .command)
-                    Button("Down") {
-                        guard canUseShortcut else {
-                            return
-                        }
-                        guard let selectedVersion, versions.contains(selectedVersion)
-                        else {
-                            selectedVersion = versions.first
-                            return
-                        }
-                        guard let index = versions.firstIndex(of: selectedVersion)
-                        else {
-                            return
-                        }
-                        let nextIndex = index + 1
-                        guard nextIndex < versions.endIndex
-                        else {
-                            return
-                        }
-                        let nextVersion = versions[nextIndex]
-                        self.selectedVersion = nextVersion
-                    }
-                    .keyboardShortcut(.downArrow, modifiers: .command)
-                }
-                .onChange(of: selectedVersion) {
-                    guard let selectedVersionId = selectedVersion?.id
-                    else {
-                        return
-                    }
-                    proxy.scrollTo(selectedVersionId)
-                }
-                .hidden()
-                List(versions, selection: $selectedVersion) { version in
-                    HStack() {
-                        Text(version.id)
-                            .font(.system(size: 14))
-                            .bold()
-                            .padding([.vertical, .leading], 5)
-                        
-                        if GameDir.client(version: version.id, type: GameType.vanilla.rawValue).dirPath.isExist() {
-                            Image(systemName: "macbook")
-                        }
-                        
-                        if GameDir.server(version: version.id, type: GameType.paper.rawValue).dirPath.isExist() {
-                            Image(systemName: "xserve")
-                        }
+            List(versions, selection: $selectedVersion) { version in
+                HStack(spacing: 10) {
+                    Image(systemName: installState(for: version).icon)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 16)
 
-                        if GameDir.server(version: version.id, type: GameType.vanilla.rawValue).dirPath.isExist() {
-                            Image(systemName: "shippingbox")
-                        }
-                        
-                        Spacer()
-                        
-                        if !isOnlyRelease {
-                            Text(version.buildType.rawValue)
-                                .bold()
-                                .foregroundStyle(version.typeTagColor)
-                                .padding([.horizontal], 5)
-                                .offset(x: -5)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(version.id)
+                            .lineLimit(1)
+
+                        if let detail = rowDetail(for: version) {
+                            Text(detail)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
                         }
                     }
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        guard selectedVersion != version
-                        else {
-                            return
-                        }
-                        selectedVersion = version
-                    }
-                    .background(selectedVersion == version ? Color.accentColor : .clear)
-                    .cornerRadius(5)
                 }
+                .tag(version)
+                .help(rowHelp(for: version))
+            }
+            .listStyle(.sidebar)
+            .disabled(!canUseShortcut)
+            .onChange(of: selectedVersion) {
+                guard let selectedVersionId = selectedVersion?.id
+                else {
+                    return
+                }
+                proxy.scrollTo(selectedVersionId)
             }
         }
+    }
+}
+
+private extension GameList {
+    func installState(for version: Version) -> (icon: String, labels: [String]) {
+        var labels = [String]()
+        if GameDir.client(version: version.id, type: GameType.vanilla.rawValue).dirPath.isExist() {
+            labels.append("Client")
+        }
+        if GameDir.server(version: version.id, type: GameType.paper.rawValue).dirPath.isExist() {
+            labels.append("Paper server")
+        }
+        if GameDir.server(version: version.id, type: GameType.vanilla.rawValue).dirPath.isExist() {
+            labels.append("Vanilla server")
+        }
+
+        if labels.contains("Client") {
+            return ("macbook", labels)
+        }
+        if labels.contains("Paper server") || labels.contains("Vanilla server") {
+            return ("xserve", labels)
+        }
+        return ("cube", labels)
+    }
+
+    func rowDetail(for version: Version) -> String? {
+        let installed = installState(for: version).labels.joined(separator: ", ")
+        if isOnlyRelease {
+            return installed.isEmpty ? nil : installed
+        }
+        let buildType = version.buildType.rawValue.capitalized
+        return installed.isEmpty ? buildType : "\(buildType) - \(installed)"
+    }
+
+    func rowHelp(for version: Version) -> String {
+        rowDetail(for: version).map { "\(version.id), \($0)" } ?? version.id
     }
 }
 

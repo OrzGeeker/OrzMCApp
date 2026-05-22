@@ -5,7 +5,9 @@
 //  Created by wangzhizhou on 2024/9/26.
 //
 
+import AppKit
 import SwiftUI
+import SwiftUIX
 
 struct SettingsView: View {
     
@@ -18,7 +20,7 @@ struct SettingsView: View {
             GroupBox {
                 VStack(alignment: .leading) {
                     HStack {
-                        Text("服务端核心")
+                        Text("Server Core")
                             .font(.headline)
                         Spacer()
                         Picker("", selection: $model.serverSoftware) {
@@ -33,7 +35,7 @@ struct SettingsView: View {
                     
                     HStack {
                         Toggle(isOn: $model.enableJVMDebugger) {
-                            Text("远程 JVM 调试")
+                            Text("Remote JVM Debugging")
                         }
                         .onChange(of: model.enableJVMDebugger) {
                             if model.enableJVMDebugger, model.jvmDebuggerArgs.isEmpty {
@@ -52,15 +54,29 @@ struct SettingsView: View {
                 Label("Server", systemImage: "xserve")
                     .font(.title)
             }
-            
-//            GroupBox {
-//                HStack {
-//                    Spacer()
-//                }
-//            } label: {
-//                Label("Client", systemImage: "macbook")
-//                    .font(.title)
-//            }
+
+            GroupBox {
+                HStack(spacing: 12) {
+                    Button("Contact Author", systemImage: "envelope") {
+                        if let url = URL(string: "mailto:\(Constants.feedbackEmail)") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+
+                    BuyMeCoffeeButton(
+                        content:
+                            Image("alipay")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 118)
+                    )
+
+                    Spacer()
+                }
+            } label: {
+                Label("Support", systemImage: "heart")
+                    .font(.title)
+            }
 
             Spacer()
         }

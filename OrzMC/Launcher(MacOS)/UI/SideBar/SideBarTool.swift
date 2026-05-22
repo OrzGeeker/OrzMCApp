@@ -44,10 +44,11 @@ struct SideBarTool: View {
     let reloadList: () -> Void
     var body: some View {
         Toggle(isOn: $showOnlyRelease) {
-            Text("Release Only")
+            Text("Releases")
                 .padding([.horizontal], 4)
                 .fontWeight(showOnlyRelease ? .semibold : .regular)
         }
+        .help("Show release versions only")
         
         Button(action: {
             reloadList()
@@ -61,6 +62,7 @@ struct SideBarTool: View {
             }
         })
         .disabled(isFetchingGameVersions)
+        .help("Refresh version list")
     }
 }
 

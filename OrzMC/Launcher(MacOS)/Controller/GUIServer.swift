@@ -19,7 +19,7 @@ struct GUIServer: Server, Sendable {
     /// 用于 Vanilla 下载官方 server.jar 的 Mojang Version 元信息
     let selectedVersion: Version
     
-    let gameModel: GameModel
+    let progressHandler: LaunchProgressHandler
     
     func start() async throws -> Process? {
         
@@ -85,9 +85,7 @@ struct GUIServer: Server, Sendable {
                     let delta = curProgress - progress
                     if delta > 0.01 || curProgress == 1 {
                         progress = curProgress
-                        await MainActor.run {
-                            self.gameModel.updateProgress(curProgress)
-                        }
+                        await progressHandler(curProgress)
                     }
                 case .failure(let error):
                     throw error
@@ -102,9 +100,7 @@ struct GUIServer: Server, Sendable {
             }
             try FileManager.default.moveItem(at: temporaryURL, to: jarFileURL)
         }
-        await MainActor.run {
-            self.gameModel.updateProgress(1)
-        }
+        await progressHandler(1)
         let process = try await launchServer(jarFileURL.path(), workDirectory: workDirectory, jarArgs: [
             "--online-mode=\(serverInfo.onlineMode ? "true" : "false")",
             "--nojline",
@@ -138,7 +134,7 @@ struct GUIServer: Server, Sendable {
         let jarFileURL = dirURL.appending(path: "server.jar")
         
         if !FileManager.default.fileExists(atPath: jarFileURL.path()) {
-            await MainActor.run { self.gameModel.updateProgress(0) }
+            await progressHandler(0)
             
             let (dataStream, response) = try await URLSession.shared.bytes(from: serverURL)
             let totalBytes = Int(response.expectedContentLength)
@@ -170,9 +166,7 @@ struct GUIServer: Server, Sendable {
                 let delta = curProgress - lastProgress
                 if delta > 0.01 || curProgress == 1 {
                     lastProgress = curProgress
-                    await MainActor.run {
-                        self.gameModel.updateProgress(curProgress)
-                    }
+                    await progressHandler(curProgress)
                 }
             }
             if !buffer.isEmpty {
@@ -185,9 +179,7 @@ struct GUIServer: Server, Sendable {
             try FileManager.default.moveItem(at: temporaryURL, to: jarFileURL)
         }
         
-        await MainActor.run {
-            self.gameModel.updateProgress(1)
-        }
+        await progressHandler(1)
         
         // Vanilla 通过 --nogui 关闭图形界面
         let process = try await launchServer(

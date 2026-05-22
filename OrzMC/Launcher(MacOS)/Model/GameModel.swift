@@ -60,6 +60,19 @@ final class GameModel {
     
     var isServer: Bool { gameType == .server }
 
+    var canStartGame: Bool {
+        guard selectedVersion != nil,
+              !isFetchingGameVersions,
+              !isLaunchingGame
+        else {
+            return false
+        }
+        if isClient {
+            return !username.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        return true
+    }
+
     var gameInfoMap = [Version: GameVersion]()
     
     var currentJavaMajorVersion: Int?
@@ -77,6 +90,8 @@ final class GameModel {
     private let javaRuntimeService = JavaRuntimeService()
 
     private let serverProcessService = ServerProcessService()
+
+    private let gameLaunchService = GameLaunchService()
 }
 
 extension GameModel {
@@ -187,7 +202,8 @@ extension GameModel {
     }
     
     func startGame() {
-        guard let selectedVersion
+        guard canStartGame,
+              let selectedVersion
         else {
             return
         }
@@ -213,46 +229,25 @@ extension GameModel {
     }
     
     func startClient(_ selectedVersion: Version) async throws {
-        let clientInfo = ClientInfo(
+        try await gameLaunchService.startClient(
             version: selectedVersion,
             username: username,
-            minMem: "512M",
-            maxMem: "2G"
+            progressHandler: progressHandler
         )
-        var launcher = GUIClient(clientInfo: clientInfo, gameModel: self)
-        try await launcher.start()
     }
     
     func startServer(_ selectedVersion: Version) async throws {
-        var jvmArgs = [String]()
-        if settingsModel.enableJVMDebugger, !settingsModel.jvmDebuggerArgs.isEmpty {
-            jvmArgs.append(settingsModel.jvmDebuggerArgs)
-        }
-        let serverInfo = ServerInfo(
-            version: selectedVersion.id,
-            gui: false,
-            debug: false,
-            forceUpgrade: false,
-            demo: false,
-            minMem: "512M",
-            maxMem: "2G",
-            jvmArgs: jvmArgs,
-            onlineMode: false,
-            showJarHelpInfo: false,
-            jarOptions: nil
+        guard let launchedServer = try await gameLaunchService.startServer(
+            version: selectedVersion,
+            software: settingsModel.serverSoftware,
+            enableJVMDebugger: settingsModel.enableJVMDebugger,
+            jvmDebuggerArgs: settingsModel.jvmDebuggerArgs,
+            progressHandler: progressHandler
         )
-        let launcher = GUIServer(
-            serverInfo: serverInfo,
-            serverType: settingsModel.serverSoftware.gameType,
-            selectedVersion: selectedVersion,
-            gameModel: self
-        )
-        guard let process = try await launcher.start()
         else {
             return
         }
-        let pid = String(process.processIdentifier)
-        GameModel.serverPIDMap[serverKey(versionId: serverInfo.version, software: settingsModel.serverSoftware)] = pid
+        GameModel.serverPIDMap[serverKey(versionId: launchedServer.versionId, software: launchedServer.software)] = launchedServer.pid
     }
     
     func checkRunningServer() {
@@ -262,13 +257,17 @@ extension GameModel {
         if !GameModel.serverPIDMap.isEmpty {
             GameModel.serverPIDMap = serverProcessService.filteredPIDMap(GameModel.serverPIDMap, runningPids: running)
         }
-        isShowKillAllServerButton = !running.isEmpty
+        isShowKillAllServerButton = serverProcessService.hasManagedRunningServers(GameModel.serverPIDMap)
     }
     
     func stopAllRunningServer() {
         Task {
             do {
-                try await Shell.stopAll()
+                let pids = serverProcessService.pids(from: GameModel.serverPIDMap)
+                for pid in pids {
+                    try Shell.runCommand(with: ["kill", pid])
+                }
+                GameModel.serverPIDMap.removeAll()
                 checkRunningServer()
             } catch {
                 errorMessage = "Failed to stop servers: \(error.localizedDescription)"
@@ -300,6 +299,14 @@ extension GameModel {
 
     func updateProgress(_ progress: Double) {
         self.progress = progress
+    }
+
+    var progressHandler: LaunchProgressHandler {
+        { [weak self] progress in
+            await MainActor.run {
+                self?.updateProgress(progress)
+            }
+        }
     }
     
     func downloadAllServerPlugins() async throws {

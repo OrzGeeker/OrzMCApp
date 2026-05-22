@@ -27,6 +27,9 @@ final class LauncherServicesTests: XCTestCase {
             service.filteredPIDMap(["paper": "100", "vanilla": "200"], runningPids: ["200"]),
             ["vanilla": "200"]
         )
+        XCTAssertFalse(service.hasManagedRunningServers([:]))
+        XCTAssertTrue(service.hasManagedRunningServers(["vanilla": "200"]))
+        XCTAssertEqual(Set(service.pids(from: ["paper": "100", "vanilla": "200"])), ["100", "200"])
     }
 
     func testVersionFiltering() throws {

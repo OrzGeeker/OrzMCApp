@@ -20,7 +20,6 @@ struct LauncherUI: View {
             GameInfoView()
         }
         .navigationSplitViewStyle(.prominentDetail)
-        .feedbackToAuthor(email: Constants.feedbackEmail)
         .alert("Operation Failed", isPresented: Binding(
             get: { model.errorMessage != nil },
             set: { if !$0 { model.errorMessage = nil } }
