@@ -9,6 +9,7 @@ import SwiftUI
 import MojangAPI
 import Game
 import JokerKits
+import OrzMCDesignSystem
 
 struct FormSectionHeader: View {
     let title: String
@@ -93,7 +94,52 @@ struct BasicInfo: View {
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
     var body: some View {
-        
+        Group {
+            if model.selectedVersion == nil {
+                EmptyContentView(OrzMCContentStates.noVersionSelected)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                detailsForm
+            }
+        }
+        .navigationTitle(model.detailTitle)
+        .onReceive(timer) { _ in
+            model.checkRunningServer()
+        }
+        .toolbar {
+            if model.isShowKillAllServerButton {
+                ToolbarItem {
+                    Button {
+                        model.stopAllRunningServer()
+                    } label: {
+                        Label("Stop All Servers", systemImage: "stop.circle")
+                    }
+                    .keyboardShortcut(.init(.init("k")), modifiers: .command)
+                    .help("Stop all running Minecraft servers")
+                }
+            }
+        }
+        .confirmationDialog(
+            deleteTarget?.confirmationTitle ?? "Delete Files?",
+            isPresented: Binding(
+                get: { deleteTarget != nil },
+                set: { if !$0 { deleteTarget = nil } }
+            ),
+            presenting: deleteTarget
+        ) { target in
+            Button("Delete", role: .destructive) {
+                try? target.path.remove()
+                deleteTarget = nil
+            }
+            Button("Cancel", role: .cancel) {
+                deleteTarget = nil
+            }
+        } message: { target in
+            Text("This removes files at \(target.path). This action cannot be undone.")
+        }
+    }
+
+    private var detailsForm: some View {
         Form {
             let paperStatus = statusFor(software: .paper)
             let vanillaStatus = statusFor(software: .vanilla)
@@ -182,41 +228,6 @@ struct BasicInfo: View {
             }
         }
         .formStyle(.grouped)
-        .navigationTitle(model.detailTitle)
-        .onReceive(timer) { _ in
-            model.checkRunningServer()
-        }
-        .toolbar {
-            if model.isShowKillAllServerButton {
-                ToolbarItem {
-                    Button {
-                        model.stopAllRunningServer()
-                    } label: {
-                        Label("Stop All Servers", systemImage: "stop.circle")
-                    }
-                    .keyboardShortcut(.init(.init("k")), modifiers: .command)
-                    .help("Stop all running Minecraft servers")
-                }
-            }
-        }
-        .confirmationDialog(
-            deleteTarget?.confirmationTitle ?? "Delete Files?",
-            isPresented: Binding(
-                get: { deleteTarget != nil },
-                set: { if !$0 { deleteTarget = nil } }
-            ),
-            presenting: deleteTarget
-        ) { target in
-            Button("Delete", role: .destructive) {
-                try? target.path.remove()
-                deleteTarget = nil
-            }
-            Button("Cancel", role: .cancel) {
-                deleteTarget = nil
-            }
-        } message: { target in
-            Text("This removes files at \(target.path). This action cannot be undone.")
-        }
     }
 }
 
