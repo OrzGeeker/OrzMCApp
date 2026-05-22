@@ -7,56 +7,89 @@
 
 import Game
 import MojangAPI
+import OrzMCFoundation
+import OrzMCLauncher
 
 typealias LaunchProgressHandler = @Sendable (Double) async -> Void
 
 struct JavaRuntimeService {
-    enum Status {
-        case unknown
-        case valid
-        case invalid
-    }
+    typealias Status = JavaRuntimeStatus
+
+    private let policy = JavaRuntimePolicy()
 
     func status(currentMajorVersion: Int?, requiredMajorVersion: Int?) -> Status {
-        guard let currentMajorVersion, let requiredMajorVersion else {
-            return .unknown
+        policy.status(
+            for: JavaRuntimeRequirement(
+                currentMajorVersion: currentMajorVersion,
+                requiredMajorVersion: requiredMajorVersion
+            )
+        )
+    }
+}
+
+extension Version: @retroactive MinecraftVersionSummary {
+    public var minecraftVersionId: String { id }
+
+    public var minecraftVersionKind: MinecraftVersionKind {
+        switch buildType {
+        case .release:
+            return .release
+        case .snapshot:
+            return .snapshot
+        case .oldBeta:
+            return .oldBeta
+        case .oldAlpha:
+            return .oldAlpha
         }
-        return currentMajorVersion >= requiredMajorVersion ? .valid : .invalid
     }
 }
 
 struct VersionFilterService {
+    private let filter = VersionListFilter()
+
     func filter(
         versions: [Version],
         searchText: String,
         releaseOnly: Bool
     ) -> [Version] {
-        var filteredVersions = versions
-        if !searchText.isEmpty {
-            filteredVersions = filteredVersions.filter { $0.id.localizedCaseInsensitiveContains(searchText) }
-        }
-        if releaseOnly {
-            filteredVersions = filteredVersions.filter { $0.buildType == .release }
-        }
-        return filteredVersions
+        filter.filter(
+            versions: versions,
+            searchText: searchText,
+            releaseOnly: releaseOnly
+        )
     }
 }
 
 struct ServerProcessService {
+    private let registry = ServerProcessRegistry()
+
     func key(versionId: String, software: SettingsModel.ServerSoftware) -> String {
-        "\(versionId)#\(software.rawValue)"
+        ManagedServerKey(versionId: versionId, softwareId: software.rawValue).rawValue
     }
 
     func filteredPIDMap(_ pidMap: [String: String], runningPids: Set<String>) -> [String: String] {
-        pidMap.filter { runningPids.contains($0.value) }
+        let processes = pidMap.reduce(into: [ManagedServerKey: ProcessIdentifier]()) { result, element in
+            result[ManagedServerKey(rawValue: element.key)] = ProcessIdentifier(element.value)
+        }
+        let runningProcessIds = Set(runningPids.map { ProcessIdentifier($0) })
+        return registry.filtered(processes, runningProcessIds: runningProcessIds)
+            .reduce(into: [String: String]()) { result, element in
+                result[element.key.rawValue] = element.value.rawValue
+            }
     }
 
     func hasManagedRunningServers(_ pidMap: [String: String]) -> Bool {
-        !pidMap.isEmpty
+        registry.hasManagedRunningServers(processes(from: pidMap))
     }
 
     func pids(from pidMap: [String: String]) -> [String] {
-        Array(pidMap.values)
+        registry.processIds(from: processes(from: pidMap)).map(\.rawValue)
+    }
+
+    private func processes(from pidMap: [String: String]) -> [ManagedServerKey: ProcessIdentifier] {
+        pidMap.reduce(into: [ManagedServerKey: ProcessIdentifier]()) { result, element in
+            result[ManagedServerKey(rawValue: element.key)] = ProcessIdentifier(element.value)
+        }
     }
 }
 

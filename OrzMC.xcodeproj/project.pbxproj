@@ -33,6 +33,8 @@
 		2B62C9922BF76C6600387498 /* ExarotonServerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B62C9912BF76C6600387498 /* ExarotonServerModel.swift */; };
 		2B79DCF629066BBC000C21A1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B79DCF529066BBC000C21A1 /* ContentView.swift */; platformFilter = ios; };
 		2B8442F62E17B28D00CB0EA0 /* Game in Frameworks */ = {isa = PBXBuildFile; platformFilters = (macos, ); productRef = 2B8442F52E17B28D00CB0EA0 /* Game */; };
+		C0D100030000000000000001 /* OrzMCFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000001 /* OrzMCFoundation */; };
+		C0D100030000000000000002 /* OrzMCLauncher in Frameworks */ = {isa = PBXBuildFile; platformFilters = (macos, ); productRef = C0D100020000000000002 /* OrzMCLauncher */; };
 		2B8AB1CE2DA0CDF700DA6605 /* LinkMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CD2DA0CDF700DA6605 /* LinkMenu.swift */; };
 		2B8AB1D02DA0D22200DA6605 /* DetailViewTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CF2DA0D22200DA6605 /* DetailViewTool.swift */; };
 		2BA06D722DA2DD760043C0CE /* SideBarTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA06D712DA2DD760043C0CE /* SideBarTool.swift */; platformFilters = (macos, ); };
@@ -172,6 +174,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B8442F62E17B28D00CB0EA0 /* Game in Frameworks */,
+				C0D100030000000000000001 /* OrzMCFoundation in Frameworks */,
+				C0D100030000000000000002 /* OrzMCLauncher in Frameworks */,
 				E20C658C2C8AFD8F00831909 /* ExarotonHTTP in Frameworks */,
 				E20C65922C8AFDB400831909 /* SwiftUIX in Frameworks */,
 				F310C79C2C8B47DF00590F32 /* Socket in Frameworks */,
@@ -513,6 +517,8 @@
 				E20C65932C8AFE4F00831909 /* ExarotonWebSocket */,
 				F310C79B2C8B47DF00590F32 /* Socket */,
 				2B8442F52E17B28D00CB0EA0 /* Game */,
+				C0D100020000000000000001 /* OrzMCFoundation */,
+				C0D100020000000000000002 /* OrzMCLauncher */,
 			);
 			productName = OrzMC;
 			productReference = 2B1C799228FEAB0600D53658 /* OrzMC.app */;
@@ -573,6 +579,7 @@
 				F353DDDE2BFE600F0097986E /* XCRemoteSwiftPackageReference "OrzAppUpdater" */,
 				F3FF37782C46EF1800BBDACE /* XCRemoteSwiftPackageReference "OrzSwiftKit" */,
 				2B8442F42E17B28D00CB0EA0 /* XCRemoteSwiftPackageReference "OrzMCKit" */,
+				C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */,
 			);
 			productRefGroup = 2B1C799328FEAB0600D53658 /* Products */;
 			projectDirPath = "";
@@ -1023,11 +1030,28 @@
 		};
 /* End XCRemoteSwiftPackageReference section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		2B8442F52E17B28D00CB0EA0 /* Game */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 2B8442F42E17B28D00CB0EA0 /* XCRemoteSwiftPackageReference "OrzMCKit" */;
 			productName = Game;
+		};
+		C0D100020000000000000001 /* OrzMCFoundation */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
+			productName = OrzMCFoundation;
+		};
+		C0D100020000000000000002 /* OrzMCLauncher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
+			productName = OrzMCLauncher;
 		};
 		E20C65892C8AFD8400831909 /* OrzAppUpdater */ = {
 			isa = XCSwiftPackageProductDependency;
