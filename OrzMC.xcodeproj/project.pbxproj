@@ -36,6 +36,7 @@
 		C0D100030000000000000001 /* OrzMCFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000001 /* OrzMCFoundation */; };
 		C0D100030000000000000002 /* OrzMCLauncher in Frameworks */ = {isa = PBXBuildFile; platformFilters = (macos, ); productRef = C0D100020000000000002 /* OrzMCLauncher */; };
 		C0D100030000000000000003 /* OrzMCDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000003 /* OrzMCDesignSystem */; };
+		C0D100030000000000000004 /* OrzMCRemoteHosting in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000004 /* OrzMCRemoteHosting */; };
 		2B8AB1CE2DA0CDF700DA6605 /* LinkMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CD2DA0CDF700DA6605 /* LinkMenu.swift */; };
 		2B8AB1D02DA0D22200DA6605 /* DetailViewTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CF2DA0D22200DA6605 /* DetailViewTool.swift */; };
 		2BA06D722DA2DD760043C0CE /* SideBarTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA06D712DA2DD760043C0CE /* SideBarTool.swift */; platformFilters = (macos, ); };
@@ -178,6 +179,7 @@
 				C0D100030000000000000001 /* OrzMCFoundation in Frameworks */,
 				C0D100030000000000000002 /* OrzMCLauncher in Frameworks */,
 				C0D100030000000000000003 /* OrzMCDesignSystem in Frameworks */,
+				C0D100030000000000000004 /* OrzMCRemoteHosting in Frameworks */,
 				E20C658C2C8AFD8F00831909 /* ExarotonHTTP in Frameworks */,
 				E20C65922C8AFDB400831909 /* SwiftUIX in Frameworks */,
 				F310C79C2C8B47DF00590F32 /* Socket in Frameworks */,
@@ -522,6 +524,7 @@
 				C0D100020000000000000001 /* OrzMCFoundation */,
 				C0D100020000000000000002 /* OrzMCLauncher */,
 				C0D100020000000000000003 /* OrzMCDesignSystem */,
+				C0D100020000000000000004 /* OrzMCRemoteHosting */,
 			);
 			productName = OrzMC;
 			productReference = 2B1C799228FEAB0600D53658 /* OrzMC.app */;
@@ -1060,6 +1063,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
 			productName = OrzMCDesignSystem;
+		};
+		C0D100020000000000000004 /* OrzMCRemoteHosting */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
+			productName = OrzMCRemoteHosting;
 		};
 		E20C65892C8AFD8400831909 /* OrzAppUpdater */ = {
 			isa = XCSwiftPackageProductDependency;

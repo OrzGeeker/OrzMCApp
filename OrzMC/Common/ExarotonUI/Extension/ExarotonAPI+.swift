@@ -8,6 +8,7 @@
 import Foundation
 import ExarotonHTTP
 import ExarotonWebSocket
+import OrzMCRemoteHosting
 
 typealias ExarotonServer = ExarotonHTTP.Components.Schemas.Server
 extension ExarotonServer: @retroactive Identifiable {}
@@ -62,6 +63,25 @@ extension ExarotonCreditMember: @retroactive Identifiable {
 
 // WebSocket
 typealias ServerStatus = ExarotonWebSocket.ServerStatus
+extension ServerStatus {
+    var remoteHostingState: RemoteServerState {
+        switch self {
+        case .OFFLINE:
+            return .offline
+        case .ONLINE:
+            return .online
+        case .STARTING, .LOADING, .PENDING, .PREPARING:
+            return .starting
+        case .STOPPING, .SAVING:
+            return .stopping
+        case .RESTARTING:
+            return .restarting
+        case .CRASHED:
+            return .unknown
+        }
+    }
+}
+
 extension ExarotonWebSocket.Server {
     var serverInfo: ExarotonServer {
         get throws {
@@ -105,5 +125,4 @@ extension Double {
         return ret
     }
 }
-
 

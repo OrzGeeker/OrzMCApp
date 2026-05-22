@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ExarotonWebSocket
+import OrzMCRemoteHosting
 
 struct ExarotonServerDetail: View {
 
@@ -28,6 +29,8 @@ struct ExarotonServerDetail: View {
 
     @State private var showConsoleCommandInput = false
     @State private var consoleCommand: String = ""
+
+    private let actionPolicy = RemoteServerListPolicy()
 
     var body: some View {
 
@@ -91,9 +94,9 @@ struct ExarotonServerDetail: View {
                                 model.errorMessage = "Server ID is missing."
                                 return
                             }
-                            await model.startServer(serverId: serverID)
+                            _ = await model.startServer(serverId: serverID)
                         }
-                    }.disabled(serverStatus != .OFFLINE)
+                    }.disabled(!canPerform(.start, on: serverStatus))
 
                     Button("Stop Server", systemImage: "stop.fill") {
                         Task {
@@ -101,10 +104,10 @@ struct ExarotonServerDetail: View {
                                 model.errorMessage = "Server ID is missing."
                                 return
                             }
-                            await model.stopServer(serverId: serverID)
+                            _ = await model.stopServer(serverId: serverID)
                         }
                     }
-                    .disabled(serverStatus != .ONLINE)
+                    .disabled(!canPerform(.stop, on: serverStatus))
 
                     Button("Restart Server", systemImage: "restart.circle.fill") {
                         Task {
@@ -112,10 +115,10 @@ struct ExarotonServerDetail: View {
                                 model.errorMessage = "Server ID is missing."
                                 return
                             }
-                            await model.restartServer(serverId: serverID)
+                            _ = await model.restartServer(serverId: serverID)
                         }
                     }
-                    .disabled(serverStatus != .ONLINE)
+                    .disabled(!canPerform(.restart, on: serverStatus))
                 }
 
                 if model.isConnected {
@@ -279,5 +282,9 @@ extension ExarotonServerDetail {
 
     func stopStreams() {
         Self.actionStreams.forEach { model.stopStream($0) }
+    }
+
+    func canPerform(_ action: RemoteServerAction, on status: ServerStatus) -> Bool {
+        actionPolicy.canPerform(action, on: status.remoteHostingState)
     }
 }
