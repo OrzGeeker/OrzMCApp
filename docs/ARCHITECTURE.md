@@ -18,14 +18,15 @@ OrzMC 后续建议稳定为以下模块：
 
 - `GameModel` 不再直接构造 `GUIClient` / `GUIServer`，启动编排已收敛到 `GameLaunchService`。
 - `GUIClient` / `GUIServer` 通过 `LaunchProgressHandler` 上报进度，不再直接依赖 `GameModel`。
-- `ServerProcessService` 持有运行中服务判定和 PID 提取规则，避免 UI 层重复理解进程状态。
+- `LauncherServices.swift` 已改为 App 层适配器，Java 运行时判断、版本过滤、服务进程记录都委托给 `OrzMCLauncher`。
 - 新增根目录 `Package.swift`，将核心能力逐步暴露为 SwiftPM products。
 - `OrzMCFoundation` 已建立基础值类型边界，目前包含 `ProcessIdentifier`。
 - `OrzMCLauncher` 已建立启动器领域边界，目前包含 Java 运行时判断、版本列表过滤、受管理服务进程记录。
 - `OrzMCProtocol` 已将现有 `OrzMC/MobileHelper(iOS)/Protocol` 暴露为 SwiftPM target。
-- `OrzMCRemoteHosting` 已建立远程托管服务抽象，目前包含远程服务器摘要、状态、动作和列表策略。
-- `OrzMCDesignSystem` 已建立跨平台设计系统边界，目前包含内容状态模型和空状态组件。
+- `OrzMCRemoteHosting` 已建立远程托管服务抽象，目前包含远程服务器摘要、状态、动作和列表策略；exaroton 详情页动作可用性已接入该策略。
+- `OrzMCDesignSystem` 已建立跨平台设计系统边界，目前包含内容状态模型和空状态组件；macOS 详情页未选择版本时已复用统一空状态。
 - 已新增 SwiftPM 单元测试，让协议层、启动器规则、远程托管规则和设计系统状态可以脱离 App target 独立验证。
+- `ExarotonServerDetail` 已拆出 `ExarotonServerActionSection`，详情页只负责页面组合和连接状态，服务器动作逻辑收敛到独立组件。
 
 ## 当前模块状态
 
@@ -33,19 +34,19 @@ OrzMC 后续建议稳定为以下模块：
 | --- | --- | --- |
 | `OrzMCApp-macOS` | 现有 Xcode target | 继续承载 App 生命周期、窗口、菜单、签名、公证、Sparkle 更新。 |
 | `OrzMCMobileHelper-iOS` | 现有 Xcode target | 继续承载 iOS 辅助端界面；协议代码后续应从 `OrzMCProtocol` 引入。 |
-| `OrzMCFoundation` | SwiftPM product | 已可独立构建和测试。 |
-| `OrzMCLauncher` | SwiftPM product | 已可独立构建和测试；下一步迁入 App 中现有 `LauncherServices` 逻辑。 |
+| `OrzMCFoundation` | SwiftPM product + App 已引用 | 已可独立构建和测试，并作为基础依赖进入 App target。 |
+| `OrzMCLauncher` | SwiftPM product + macOS 已引用 | 已可独立构建和测试；App 中 `LauncherServices` 已委托该模块。 |
 | `OrzMCProtocol` | SwiftPM product | 已可独立构建和测试；当前复用现有协议源码路径。 |
-| `OrzMCRemoteHosting` | SwiftPM product | 已可独立构建和测试；下一步对接 exaroton 服务层。 |
-| `OrzMCDesignSystem` | SwiftPM product | 已可独立构建和测试；下一步迁入通用空状态、状态标签和列表行组件。 |
+| `OrzMCRemoteHosting` | SwiftPM product + App 已引用 | 已可独立构建和测试；exaroton 状态映射与动作策略已对接。 |
+| `OrzMCDesignSystem` | SwiftPM product + App 已引用 | 已可独立构建和测试；macOS 空状态已接入。 |
 
 ## 迁移顺序
 
 1. 保持现有 Xcode App target 不变，先通过 SwiftPM 为稳定代码建立独立构建入口。
 2. 优先迁移协议层，因为它与 UI、CoreData、分发和平台窗口能力耦合最低。
-3. 继续把 `LauncherServices.swift` 拆成更小的领域服务，然后迁入 `OrzMCLauncher`。
-4. 将 exaroton 相关模型、HTTP、WebSocket 和 UI 分离，先抽服务层，再抽 UI。
-5. 当 SwiftPM 模块稳定后，再调整 Xcode target 依赖，让 App target 引用包产品，而不是直接编译全部源码。
+3. `LauncherServices.swift` 保持为 App 适配器；新增启动器规则优先进入 `OrzMCLauncher`，再由适配器暴露给 UI。
+4. exaroton 继续按“领域规则进入 `OrzMCRemoteHosting`，第三方 SDK 适配留在 App 层，复杂 UI 拆成组件”的方式推进。
+5. iOS 辅助端协议源码当前仍由 Xcode target 直接编译；当 iOS 目标需要继续迭代时，再将 App target 切换为引用 `OrzMCProtocol` product，避免协议源码在工程和包之间长期双轨维护。
 
 ## 验证命令
 

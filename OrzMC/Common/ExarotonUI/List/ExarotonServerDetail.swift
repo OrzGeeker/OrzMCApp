@@ -7,7 +7,6 @@
 
 import SwiftUI
 import ExarotonWebSocket
-import OrzMCRemoteHosting
 
 struct ExarotonServerDetail: View {
 
@@ -29,8 +28,6 @@ struct ExarotonServerDetail: View {
 
     @State private var showConsoleCommandInput = false
     @State private var consoleCommand: String = ""
-
-    private let actionPolicy = RemoteServerListPolicy()
 
     var body: some View {
 
@@ -77,49 +74,12 @@ struct ExarotonServerDetail: View {
                     }
                 }
 
-                Section("Actions") {
-
-                    if serverRAM > 0 {
-                        Stepper("RAM: \(String(format: "%d", serverRAM)) GB",
-                                value: $serverRAM,
-                                in: 2...16,
-                                step: 1
-                        )
-                        .disabled(loading || serverStatus != .OFFLINE)
-                    }
-
-                    Button("Start Server", systemImage: "restart.circle") {
-                        Task {
-                            guard let serverID = server.id else {
-                                model.errorMessage = "Server ID is missing."
-                                return
-                            }
-                            _ = await model.startServer(serverId: serverID)
-                        }
-                    }.disabled(!canPerform(.start, on: serverStatus))
-
-                    Button("Stop Server", systemImage: "stop.fill") {
-                        Task {
-                            guard let serverID = server.id else {
-                                model.errorMessage = "Server ID is missing."
-                                return
-                            }
-                            _ = await model.stopServer(serverId: serverID)
-                        }
-                    }
-                    .disabled(!canPerform(.stop, on: serverStatus))
-
-                    Button("Restart Server", systemImage: "restart.circle.fill") {
-                        Task {
-                            guard let serverID = server.id else {
-                                model.errorMessage = "Server ID is missing."
-                                return
-                            }
-                            _ = await model.restartServer(serverId: serverID)
-                        }
-                    }
-                    .disabled(!canPerform(.restart, on: serverStatus))
-                }
+                ExarotonServerActionSection(
+                    server: server,
+                    status: serverStatus,
+                    serverRAM: $serverRAM,
+                    isLoading: $loading
+                )
 
                 if model.isConnected {
 
@@ -282,9 +242,5 @@ extension ExarotonServerDetail {
 
     func stopStreams() {
         Self.actionStreams.forEach { model.stopStream($0) }
-    }
-
-    func canPerform(_ action: RemoteServerAction, on status: ServerStatus) -> Bool {
-        actionPolicy.canPerform(action, on: status.remoteHostingState)
     }
 }
