@@ -64,6 +64,13 @@
 		C0D000010000000000000001 /* LauncherServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000001 /* LauncherServices.swift */; platformFilters = (macos, ); };
 		C0D000010000000000000002 /* LauncherServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000002 /* LauncherServicesTests.swift */; };
 		C0D000010000000000000003 /* ProtocolPacketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000003 /* ProtocolPacketTests.swift */; };
+		C0D200010000000000000001 /* LauncherTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000001 /* LauncherTypes.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000002 /* JavaRuntimeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000002 /* JavaRuntimeService.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000003 /* GameCatalogService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000003 /* GameCatalogService.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000004 /* VersionFilterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000004 /* VersionFilterService.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000005 /* ServerProcessService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000005 /* ServerProcessService.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000006 /* GameLaunchService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000006 /* GameLaunchService.swift */; platformFilters = (macos, ); };
+		C0D200010000000000000007 /* ServerPluginDownloadService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D200020000000000000007 /* ServerPluginDownloadService.swift */; platformFilters = (macos, ); };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -126,6 +133,13 @@
 		C0D000020000000000000001 /* LauncherServices.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherServices.swift; sourceTree = "<group>"; };
 		C0D000020000000000000002 /* LauncherServicesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherServicesTests.swift; sourceTree = "<group>"; };
 		C0D000020000000000000003 /* ProtocolPacketTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolPacketTests.swift; sourceTree = "<group>"; };
+		C0D200020000000000000001 /* LauncherTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LauncherTypes.swift; sourceTree = "<group>"; };
+		C0D200020000000000000002 /* JavaRuntimeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JavaRuntimeService.swift; sourceTree = "<group>"; };
+		C0D200020000000000000003 /* GameCatalogService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameCatalogService.swift; sourceTree = "<group>"; };
+		C0D200020000000000000004 /* VersionFilterService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionFilterService.swift; sourceTree = "<group>"; };
+		C0D200020000000000000005 /* ServerProcessService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerProcessService.swift; sourceTree = "<group>"; };
+		C0D200020000000000000006 /* GameLaunchService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameLaunchService.swift; sourceTree = "<group>"; };
+		C0D200020000000000000007 /* ServerPluginDownloadService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerPluginDownloadService.swift; sourceTree = "<group>"; };
 		F3B4D0BB2A1A776A0095B108 /* Int32+littleEndianBytes.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Int32+littleEndianBytes.swift"; sourceTree = "<group>"; };
 		F3B4D0BC2A1A776A0095B108 /* MCRCON.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MCRCON.swift; sourceTree = "<group>"; };
 		F3B4D0BD2A1A776A0095B108 /* RCONPacket.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RCONPacket.swift; sourceTree = "<group>"; };
@@ -313,6 +327,13 @@
 				2BA7F9952CA58DFD00ED2684 /* SettingsModel.swift */,
 				F30F00EE2BDC966900CAA802 /* GameModel.swift */,
 				C0D000020000000000000001 /* LauncherServices.swift */,
+				C0D200020000000000000001 /* LauncherTypes.swift */,
+				C0D200020000000000000002 /* JavaRuntimeService.swift */,
+				C0D200020000000000000003 /* GameCatalogService.swift */,
+				C0D200020000000000000004 /* VersionFilterService.swift */,
+				C0D200020000000000000005 /* ServerProcessService.swift */,
+				C0D200020000000000000006 /* GameLaunchService.swift */,
+				C0D200020000000000000007 /* ServerPluginDownloadService.swift */,
 				2B54E0862BDDFB16001B6877 /* Version+.swift */,
 				F3B18FAB2BE242A2002C7851 /* Constants.swift */,
 			);
@@ -636,6 +657,13 @@
 				F30F00F12BDCC6D900CAA802 /* GUIClient.swift in Sources */,
 				F30F00EF2BDC966900CAA802 /* GameModel.swift in Sources */,
 				C0D000010000000000000001 /* LauncherServices.swift in Sources */,
+				C0D200010000000000000001 /* LauncherTypes.swift in Sources */,
+				C0D200010000000000000002 /* JavaRuntimeService.swift in Sources */,
+				C0D200010000000000000003 /* GameCatalogService.swift in Sources */,
+				C0D200010000000000000004 /* VersionFilterService.swift in Sources */,
+				C0D200010000000000000005 /* ServerProcessService.swift in Sources */,
+				C0D200010000000000000006 /* GameLaunchService.swift in Sources */,
+				C0D200010000000000000007 /* ServerPluginDownloadService.swift in Sources */,
 				F30F00ED2BDBDF7000CAA802 /* GameView.swift in Sources */,
 				2B8AB1CE2DA0CDF700DA6605 /* LinkMenu.swift in Sources */,
 				2B5ACA632BFB2A8300397BFC /* Config.swift in Sources */,
