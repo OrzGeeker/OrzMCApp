@@ -113,6 +113,10 @@ struct ServerProcessService {
         store.refresh(runningProcessIds: Set(runningPids.map { ProcessIdentifier($0) }))
     }
 
+    func runningServerPids() -> Set<String> {
+        Set((try? Shell.allRunningServerPids()) ?? [])
+    }
+
     var hasManagedRunningServers: Bool {
         store.hasManagedRunningServers
     }
@@ -127,6 +131,16 @@ struct ServerProcessService {
 
     mutating func remove(versionId: String, software: SettingsModel.ServerSoftware) {
         store.removeProcess(for: ManagedServerKey(versionId: versionId, softwareId: software.rawValue))
+    }
+
+    func stop(processId: String) throws {
+        try Shell.runCommand(with: ["kill", processId])
+    }
+
+    func stop(processIds: [String]) throws {
+        for pid in processIds {
+            try Shell.runCommand(with: ["kill", pid])
+        }
     }
 
     mutating func removeAll() {

@@ -8,7 +8,6 @@
 import SwiftUI
 import Game
 import MojangAPI
-import JokerKits
 
 @MainActor
 @Observable
@@ -251,20 +250,16 @@ extension GameModel {
     }
     
     func checkRunningServer() {
-        let pids = (try? Shell.allRunningServerPids()) ?? []
-        let running = Set(pids)
-        runningServerPids = running
-        serverProcessService.refresh(runningPids: running)
+        let runningPids = serverProcessService.runningServerPids()
+        runningServerPids = runningPids
+        serverProcessService.refresh(runningPids: runningPids)
         isShowKillAllServerButton = serverProcessService.hasManagedRunningServers
     }
     
     func stopAllRunningServer() {
         Task {
             do {
-                let pids = serverProcessService.pids()
-                for pid in pids {
-                    try Shell.runCommand(with: ["kill", pid])
-                }
+                try serverProcessService.stop(processIds: serverProcessService.pids())
                 serverProcessService.removeAll()
                 checkRunningServer()
             } catch {
@@ -283,7 +278,7 @@ extension GameModel {
             return
         }
         do {
-            try Shell.runCommand(with: ["kill", pid])
+            try serverProcessService.stop(processId: pid)
             serverProcessService.remove(versionId: versionId, software: software)
             checkRunningServer()
         } catch {
