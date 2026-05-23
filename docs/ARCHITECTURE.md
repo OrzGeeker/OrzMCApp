@@ -21,6 +21,7 @@ OrzMC 后续建议稳定为以下模块：
 - `LauncherServices.swift` 已改为 App 层适配器，Java 运行时判断、版本过滤、服务进程记录都委托给 `OrzMCLauncher`。
 - `GameModel` 不再持有全局服务端 PID 表，受管理服务进程状态已收敛到 `ManagedServerProcessStore`，App 层仅负责把启动结果和系统进程列表同步进去。
 - Paper 服务端插件批量下载已抽到 `ServerPluginDownloadService`，`GameModel` 只负责下载进度状态和错误展示。
+- Minecraft 版本目录加载和当前 Java 主版本解析已抽到 `GameCatalogService` / `JavaRuntimeService`，`GameModel` 不再直接访问 Mojang manifest 或解析 JDK 版本字符串。
 - 新增根目录 `Package.swift`，将核心能力逐步暴露为 SwiftPM products。
 - `OrzMCFoundation` 已建立基础值类型边界，目前包含 `ProcessIdentifier`。
 - `OrzMCLauncher` 已建立启动器领域边界，目前包含 Java 运行时判断、版本列表过滤、受管理服务进程记录。

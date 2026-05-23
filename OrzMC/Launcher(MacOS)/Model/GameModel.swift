@@ -87,6 +87,8 @@ final class GameModel {
 
     private let javaRuntimeService = JavaRuntimeService()
 
+    private let gameCatalogService = GameCatalogService()
+
     private var serverProcessService = ServerProcessService()
 
     private let gameLaunchService = GameLaunchService()
@@ -162,9 +164,7 @@ extension GameModel {
 extension GameModel {
     
     func fetchCurrentJavaMajorVersion() {
-        guard let currentJavaVersion = try? OracleJava.currentJDK()?.version,
-              let currentJaveMajorVersionSubstring = currentJavaVersion.split(separator: ".").first,
-              let currentJavaMajorVersion = Int(String(currentJaveMajorVersionSubstring))
+        guard let currentJavaMajorVersion = javaRuntimeService.currentMajorVersion()
         else {
             return
         }
@@ -172,7 +172,7 @@ extension GameModel {
     }
     
     func fetchGameVersions() async throws {
-        versions = try await Mojang.manifest().versions
+        versions = try await gameCatalogService.fetchVersions()
     }
     
     func fetchGameInfo() {
@@ -188,7 +188,7 @@ extension GameModel {
         
         Task {
             do {
-                guard let gameInfo = try await selectedVersion.gameVersion
+                guard let gameInfo = try await gameCatalogService.fetchGameInfo(for: selectedVersion)
                 else { return }
                 await MainActor.run {
                     gameInfoMap[selectedVersion] = gameInfo

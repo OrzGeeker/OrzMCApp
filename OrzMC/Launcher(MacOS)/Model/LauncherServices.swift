@@ -26,6 +26,22 @@ struct JavaRuntimeService {
 
     private let policy = JavaRuntimePolicy()
 
+    func currentMajorVersion() -> Int? {
+        guard let currentJavaVersion = try? OracleJava.currentJDK()?.version
+        else {
+            return nil
+        }
+        return majorVersion(from: currentJavaVersion)
+    }
+
+    func majorVersion(from version: String) -> Int? {
+        guard let majorVersionSubstring = version.split(separator: ".").first
+        else {
+            return nil
+        }
+        return Int(String(majorVersionSubstring))
+    }
+
     func status(currentMajorVersion: Int?, requiredMajorVersion: Int?) -> Status {
         policy.status(
             for: JavaRuntimeRequirement(
@@ -33,6 +49,16 @@ struct JavaRuntimeService {
                 requiredMajorVersion: requiredMajorVersion
             )
         )
+    }
+}
+
+struct GameCatalogService {
+    func fetchVersions() async throws -> [Version] {
+        try await Mojang.manifest().versions
+    }
+
+    func fetchGameInfo(for version: Version) async throws -> GameVersion? {
+        try await version.gameVersion
     }
 }
 

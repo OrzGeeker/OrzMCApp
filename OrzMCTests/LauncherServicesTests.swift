@@ -19,6 +19,14 @@ final class LauncherServicesTests: XCTestCase {
         XCTAssertEqual(service.status(currentMajorVersion: 22, requiredMajorVersion: 21), .valid)
     }
 
+    func testJavaMajorVersionParsing() {
+        let service = JavaRuntimeService()
+
+        XCTAssertEqual(service.majorVersion(from: "21.0.7"), 21)
+        XCTAssertEqual(service.majorVersion(from: "17"), 17)
+        XCTAssertNil(service.majorVersion(from: "not-a-version"))
+    }
+
     func testServerProcessKeyAndPIDFiltering() {
         var service = ServerProcessService()
 
