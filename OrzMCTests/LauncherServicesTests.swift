@@ -49,6 +49,18 @@ final class LauncherServicesTests: XCTestCase {
         XCTAssertFalse(service.hasManagedRunningServers)
     }
 
+    func testServerProcessServiceUsesInjectedCommander() throws {
+        let commander = FakeServerProcessCommander(runningPids: ["300", "400"])
+        let service = ServerProcessService(commander: commander)
+
+        XCTAssertEqual(service.runningServerPids(), ["300", "400"])
+
+        try service.stop(processId: "300")
+        try service.stop(processIds: ["400", "500"])
+
+        XCTAssertEqual(commander.stoppedPids, ["300", "400", "500"])
+    }
+
     func testVersionFiltering() throws {
         let versions = try makeVersions()
         let service = VersionFilterService()
@@ -78,5 +90,22 @@ final class LauncherServicesTests: XCTestCase {
         """.data(using: .utf8)!
 
         return try JSONDecoder().decode([Version].self, from: jsonData)
+    }
+}
+
+private final class FakeServerProcessCommander: ServerProcessCommanding {
+    let runningPids: [String]
+    var stoppedPids = [String]()
+
+    init(runningPids: [String]) {
+        self.runningPids = runningPids
+    }
+
+    func runningServerPids() throws -> [String] {
+        runningPids
+    }
+
+    func stop(processId: String) throws {
+        stoppedPids.append(processId)
     }
 }

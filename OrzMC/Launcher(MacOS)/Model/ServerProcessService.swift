@@ -9,8 +9,28 @@ import JokerKits
 import OrzMCFoundation
 import OrzMCLauncher
 
+protocol ServerProcessCommanding: AnyObject {
+    func runningServerPids() throws -> [String]
+    func stop(processId: String) throws
+}
+
+final class ShellServerProcessCommander: ServerProcessCommanding {
+    func runningServerPids() throws -> [String] {
+        try Shell.allRunningServerPids()
+    }
+
+    func stop(processId: String) throws {
+        try Shell.runCommand(with: ["kill", processId])
+    }
+}
+
 struct ServerProcessService {
     private var store = ManagedServerProcessStore()
+    private let commander: ServerProcessCommanding
+
+    init(commander: ServerProcessCommanding = ShellServerProcessCommander()) {
+        self.commander = commander
+    }
 
     func key(versionId: String, software: SettingsModel.ServerSoftware) -> String {
         ManagedServerKey(versionId: versionId, softwareId: software.rawValue).rawValue
@@ -28,7 +48,7 @@ struct ServerProcessService {
     }
 
     func runningServerPids() -> Set<String> {
-        Set((try? Shell.allRunningServerPids()) ?? [])
+        Set((try? commander.runningServerPids()) ?? [])
     }
 
     var hasManagedRunningServers: Bool {
@@ -48,12 +68,12 @@ struct ServerProcessService {
     }
 
     func stop(processId: String) throws {
-        try Shell.runCommand(with: ["kill", processId])
+        try commander.stop(processId: processId)
     }
 
     func stop(processIds: [String]) throws {
         for pid in processIds {
-            try Shell.runCommand(with: ["kill", pid])
+            try stop(processId: pid)
         }
     }
 
