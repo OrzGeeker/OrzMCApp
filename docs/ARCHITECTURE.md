@@ -22,7 +22,7 @@ OrzMC 后续建议稳定为以下模块：
 - 新增根目录 `Package.swift`，将核心能力逐步暴露为 SwiftPM products。
 - `OrzMCFoundation` 已建立基础值类型边界，目前包含 `ProcessIdentifier`。
 - `OrzMCLauncher` 已建立启动器领域边界，目前包含 Java 运行时判断、版本列表过滤、受管理服务进程记录。
-- `OrzMCProtocol` 已将现有 `OrzMC/MobileHelper(iOS)/Protocol` 暴露为 SwiftPM target。
+- `OrzMCProtocol` 已将现有 `OrzMC/MobileHelper(iOS)/Protocol` 暴露为 SwiftPM target；Xcode App target 和 Xcode 单元测试已改为引用该 product，不再直接编译协议源码。
 - `OrzMCRemoteHosting` 已建立远程托管服务抽象，目前包含远程服务器摘要、状态、动作和列表策略；exaroton 详情页动作可用性已接入该策略。
 - `OrzMCDesignSystem` 已建立跨平台设计系统边界，目前包含内容状态模型和空状态组件；macOS 详情页未选择版本时已复用统一空状态。
 - 已新增 SwiftPM 单元测试，让协议层、启动器规则、远程托管规则和设计系统状态可以脱离 App target 独立验证。
@@ -33,10 +33,10 @@ OrzMC 后续建议稳定为以下模块：
 | 模块 | 状态 | 说明 |
 | --- | --- | --- |
 | `OrzMCApp-macOS` | 现有 Xcode target | 继续承载 App 生命周期、窗口、菜单、签名、公证、Sparkle 更新。 |
-| `OrzMCMobileHelper-iOS` | 现有 Xcode target | 继续承载 iOS 辅助端界面；协议代码后续应从 `OrzMCProtocol` 引入。 |
+| `OrzMCMobileHelper-iOS` | 现有 Xcode target + App 已引用协议模块 | 继续承载 iOS 辅助端界面；协议实现由 `OrzMCProtocol` 提供。 |
 | `OrzMCFoundation` | SwiftPM product + App 已引用 | 已可独立构建和测试，并作为基础依赖进入 App target。 |
 | `OrzMCLauncher` | SwiftPM product + macOS 已引用 | 已可独立构建和测试；App 中 `LauncherServices` 已委托该模块。 |
-| `OrzMCProtocol` | SwiftPM product | 已可独立构建和测试；当前复用现有协议源码路径。 |
+| `OrzMCProtocol` | SwiftPM product + App 已引用 | 已可独立构建和测试；当前复用现有协议源码路径，并作为 Xcode target 的单一协议来源。 |
 | `OrzMCRemoteHosting` | SwiftPM product + App 已引用 | 已可独立构建和测试；exaroton 状态映射与动作策略已对接。 |
 | `OrzMCDesignSystem` | SwiftPM product + App 已引用 | 已可独立构建和测试；macOS 空状态已接入。 |
 
@@ -46,7 +46,7 @@ OrzMC 后续建议稳定为以下模块：
 2. 优先迁移协议层，因为它与 UI、CoreData、分发和平台窗口能力耦合最低。
 3. `LauncherServices.swift` 保持为 App 适配器；新增启动器规则优先进入 `OrzMCLauncher`，再由适配器暴露给 UI。
 4. exaroton 继续按“领域规则进入 `OrzMCRemoteHosting`，第三方 SDK 适配留在 App 层，复杂 UI 拆成组件”的方式推进。
-5. iOS 辅助端协议源码当前仍由 Xcode target 直接编译；当 iOS 目标需要继续迭代时，再将 App target 切换为引用 `OrzMCProtocol` product，避免协议源码在工程和包之间长期双轨维护。
+5. iOS 辅助端协议源码已切换为 `OrzMCProtocol` product；后续 iOS 新功能只在 App 层引用协议模块，不再把协议源码重新加入 App target Sources。
 
 ## 验证命令
 
@@ -61,6 +61,14 @@ macOS App target 验证：
 ```bash
 xcodebuild test -project OrzMC.xcodeproj -scheme OrzMC -destination 'platform=macOS,arch=arm64' -derivedDataPath /private/tmp/orzmc-arch-derived
 ```
+
+iOS App target 验证：
+
+```bash
+xcodebuild build -project OrzMC.xcodeproj -scheme OrzMC -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath /private/tmp/orzmc-ios-derived
+```
+
+本地验证 iOS 构建时，需要 Xcode 安装的 iOS Simulator SDK 与可用模拟器运行时版本匹配。
 
 ## 维护规则
 

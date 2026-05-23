@@ -38,6 +38,8 @@
 		C0D100030000000000000002 /* OrzMCLauncher in Frameworks */ = {isa = PBXBuildFile; platformFilters = (macos, ); productRef = C0D100020000000000002 /* OrzMCLauncher */; };
 		C0D100030000000000000003 /* OrzMCDesignSystem in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000003 /* OrzMCDesignSystem */; };
 		C0D100030000000000000004 /* OrzMCRemoteHosting in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000004 /* OrzMCRemoteHosting */; };
+		C0D100030000000000000005 /* OrzMCProtocol in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = C0D100020000000000000005 /* OrzMCProtocol */; };
+		C0D100030000000000000006 /* OrzMCProtocol in Frameworks */ = {isa = PBXBuildFile; productRef = C0D100020000000000000005 /* OrzMCProtocol */; };
 		2B8AB1CE2DA0CDF700DA6605 /* LinkMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CD2DA0CDF700DA6605 /* LinkMenu.swift */; };
 		2B8AB1D02DA0D22200DA6605 /* DetailViewTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8AB1CF2DA0D22200DA6605 /* DetailViewTool.swift */; };
 		2BA06D722DA2DD760043C0CE /* SideBarTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BA06D712DA2DD760043C0CE /* SideBarTool.swift */; platformFilters = (macos, ); };
@@ -54,38 +56,14 @@
 		F30F00EF2BDC966900CAA802 /* GameModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30F00EE2BDC966900CAA802 /* GameModel.swift */; platformFilters = (macos, ); };
 		F30F00F12BDCC6D900CAA802 /* GUIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30F00F02BDCC6D900CAA802 /* GUIClient.swift */; platformFilters = (macos, ); };
 		F30F00F32BDCCBD300CAA802 /* GUIServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F30F00F22BDCCBD300CAA802 /* GUIServer.swift */; platformFilters = (macos, ); };
-		F310C79C2C8B47DF00590F32 /* Socket in Frameworks */ = {isa = PBXBuildFile; platformFilter = ios; productRef = F310C79B2C8B47DF00590F32 /* Socket */; };
 		F310C79E2C8B535700590F32 /* ExarotonCopyableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = F310C79D2C8B535700590F32 /* ExarotonCopyableText.swift */; };
 		F310C7A02C8B6B5D00590F32 /* documentation.docc in Sources */ = {isa = PBXBuildFile; fileRef = F310C79F2C8B6B5D00590F32 /* documentation.docc */; };
 		F3B18FAC2BE242A2002C7851 /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B18FAB2BE242A2002C7851 /* Constants.swift */; };
-		F3B4D0CD2A1A776A0095B108 /* Int32+littleEndianBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BB2A1A776A0095B108 /* Int32+littleEndianBytes.swift */; platformFilter = ios; };
-		F3B4D0CE2A1A776A0095B108 /* MCRCON.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BC2A1A776A0095B108 /* MCRCON.swift */; platformFilter = ios; };
-		F3B4D0CF2A1A776A0095B108 /* RCONPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BD2A1A776A0095B108 /* RCONPacket.swift */; platformFilter = ios; };
-		F3B4D0D02A1A776A0095B108 /* MCRCONError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BE2A1A776A0095B108 /* MCRCONError.swift */; platformFilter = ios; };
-		F3B4D0D12A1A776A0095B108 /* MCSLPPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C02A1A776A0095B108 /* MCSLPPacket.swift */; platformFilter = ios; };
-		F3B4D0D22A1A776A0095B108 /* MCSLPStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C12A1A776A0095B108 /* MCSLPStatus.swift */; platformFilter = ios; };
-		F3B4D0D32A1A776A0095B108 /* String+base64Image.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C22A1A776A0095B108 /* String+base64Image.swift */; platformFilter = ios; };
-		F3B4D0D42A1A776A0095B108 /* MCSLP.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C32A1A776A0095B108 /* MCSLP.swift */; platformFilter = ios; };
-		F3B4D0D52A1A776A0095B108 /* MCSLPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C42A1A776A0095B108 /* MCSLPError.swift */; platformFilter = ios; };
-		F3B4D0D62A1A776A0095B108 /* Array+UInt8.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C62A1A776A0095B108 /* Array+UInt8.swift */; platformFilter = ios; };
-		F3B4D0D72A1A776A0095B108 /* MCServerStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C72A1A776A0095B108 /* MCServerStatus.swift */; platformFilter = ios; };
-		F3B4D0D82A1A776A0095B108 /* MCQueryError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C82A1A776A0095B108 /* MCQueryError.swift */; platformFilter = ios; };
-		F3B4D0D92A1A776A0095B108 /* MCQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C92A1A776A0095B108 /* MCQuery.swift */; platformFilter = ios; };
-		F3B4D0DA2A1A776A0095B108 /* Int32+BigEndianBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0CA2A1A776A0095B108 /* Int32+BigEndianBytes.swift */; platformFilter = ios; };
-		F3B4D0DB2A1A776A0095B108 /* MCQuery+Packet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0CB2A1A776A0095B108 /* MCQuery+Packet.swift */; platformFilter = ios; };
-		F3B4D0DC2A1A776A0095B108 /* String+MOTD.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0CC2A1A776A0095B108 /* String+MOTD.swift */; platformFilter = ios; };
-		F3B4D0DF2A1A777A0095B108 /* MCServerInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0DD2A1A777A0095B108 /* MCServerInfo.swift */; platformFilter = ios; };
-		F3B4D0E02A1A777A0095B108 /* MCServerStatusInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0DE2A1A777A0095B108 /* MCServerStatusInfo.swift */; platformFilter = ios; };
-		F3B4D0E72A1A7BEB0095B108 /* MCServerInfo+Equatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0E62A1A7BEB0095B108 /* MCServerInfo+Equatable.swift */; platformFilter = ios; };
 		F3FE52112BF7B494006E79AA /* ExarotonServerStatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FE52102BF7B494006E79AA /* ExarotonServerStatusView.swift */; };
 		F3FE52132BF7B4FC006E79AA /* ExarotonServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3FE52122BF7B4FC006E79AA /* ExarotonServerView.swift */; };
 		C0D000010000000000000001 /* LauncherServices.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000001 /* LauncherServices.swift */; platformFilters = (macos, ); };
 		C0D000010000000000000002 /* LauncherServicesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000002 /* LauncherServicesTests.swift */; };
 		C0D000010000000000000003 /* ProtocolPacketTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0D000020000000000000003 /* ProtocolPacketTests.swift */; };
-		C0D000010000000000000004 /* MCSLPPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C02A1A776A0095B108 /* MCSLPPacket.swift */; };
-		C0D000010000000000000005 /* MCSLPError.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0C42A1A776A0095B108 /* MCSLPError.swift */; };
-		C0D000010000000000000006 /* RCONPacket.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BD2A1A776A0095B108 /* RCONPacket.swift */; };
-		C0D000010000000000000007 /* Int32+littleEndianBytes.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3B4D0BB2A1A776A0095B108 /* Int32+littleEndianBytes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -182,9 +160,9 @@
 				C0D100030000000000000002 /* OrzMCLauncher in Frameworks */,
 				C0D100030000000000000003 /* OrzMCDesignSystem in Frameworks */,
 				C0D100030000000000000004 /* OrzMCRemoteHosting in Frameworks */,
+				C0D100030000000000000005 /* OrzMCProtocol in Frameworks */,
 				E20C658C2C8AFD8F00831909 /* ExarotonHTTP in Frameworks */,
 				E20C65922C8AFDB400831909 /* SwiftUIX in Frameworks */,
-				F310C79C2C8B47DF00590F32 /* Socket in Frameworks */,
 				E20C65942C8AFE4F00831909 /* ExarotonWebSocket in Frameworks */,
 				E20C658A2C8AFD8400831909 /* OrzAppUpdater in Frameworks */,
 			);
@@ -194,6 +172,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0D100030000000000000006 /* OrzMCProtocol in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -522,12 +501,12 @@
 				E20C658B2C8AFD8F00831909 /* ExarotonHTTP */,
 				E20C65912C8AFDB400831909 /* SwiftUIX */,
 				E20C65932C8AFE4F00831909 /* ExarotonWebSocket */,
-				F310C79B2C8B47DF00590F32 /* Socket */,
 				2B8442F52E17B28D00CB0EA0 /* Game */,
 				C0D100020000000000000001 /* OrzMCFoundation */,
 				C0D100020000000000000002 /* OrzMCLauncher */,
 				C0D100020000000000000003 /* OrzMCDesignSystem */,
 				C0D100020000000000000004 /* OrzMCRemoteHosting */,
+				C0D100020000000000000005 /* OrzMCProtocol */,
 			);
 			productName = OrzMC;
 			productReference = 2B1C799228FEAB0600D53658 /* OrzMC.app */;
@@ -548,6 +527,7 @@
 			);
 			name = OrzMCTests;
 			packageProductDependencies = (
+				C0D100020000000000000005 /* OrzMCProtocol */,
 			);
 			productName = OrzMCTests;
 			productReference = C0D000020000000000000004 /* OrzMCTests.xctest */;
@@ -628,22 +608,16 @@
 				2B5BC3D72BFC527E00348C00 /* ExarotonServerPlayList.swift in Sources */,
 				2B5BC3D92BFC527E00348C00 /* ExarotonServerActionSection.swift in Sources */,
 				2B5ACA5B2BFB28B100397BFC /* ExarotonAPI+.swift in Sources */,
-				F3B4D0D02A1A776A0095B108 /* MCRCONError.swift in Sources */,
-				F3B4D0D72A1A776A0095B108 /* MCServerStatus.swift in Sources */,
-				F3B4D0D32A1A776A0095B108 /* String+base64Image.swift in Sources */,
 				2B5ACA6A2BFB5C8A00397BFC /* ExarotonTradeMarkView.swift in Sources */,
-				F3B4D0D12A1A776A0095B108 /* MCSLPPacket.swift in Sources */,
 				F310C7A02C8B6B5D00590F32 /* documentation.docc in Sources */,
 				2B5ACA5D2BFB28E700397BFC /* String+.swift in Sources */,
 				2B62C9852BF73F0200387498 /* ExarotonServerList.swift in Sources */,
-				F3B4D0DC2A1A776A0095B108 /* String+MOTD.swift in Sources */,
 				2B62C97D2BF7216000387498 /* ExarotonServerDetail.swift in Sources */,
 				2B1C799628FEAB0600D53658 /* OrzMCApp.swift in Sources */,
 				2B5ACA592BFB267B00397BFC /* ExarotonCreditPoolDetail.swift in Sources */,
 				2B5ACA562BFB136200397BFC /* ExarotonCreditPoolView.swift in Sources */,
 				F30F00F32BDCCBD300CAA802 /* GUIServer.swift in Sources */,
 				F3FE52132BF7B4FC006E79AA /* ExarotonServerView.swift in Sources */,
-				F3B4D0E72A1A7BEB0095B108 /* MCServerInfo+Equatable.swift in Sources */,
 				2B8AB1D02DA0D22200DA6605 /* DetailViewTool.swift in Sources */,
 				2BA7F9962CA58DFD00ED2684 /* SettingsModel.swift in Sources */,
 				2B54E08C2BDE0ACA001B6877 /* BasicInfo.swift in Sources */,
@@ -651,37 +625,24 @@
 				2B62C9752BF71D5B00387498 /* FeedbackToAuthor.swift in Sources */,
 				2B54E08A2BDE0945001B6877 /* GameInfoView.swift in Sources */,
 				2B5ACA682BFB312300397BFC /* ExarotonCreditView.swift in Sources */,
-				F3B4D0CD2A1A776A0095B108 /* Int32+littleEndianBytes.swift in Sources */,
 				2B5E409E2BFD9683007216E7 /* ExarotonContent.swift in Sources */,
-				F3B4D0D62A1A776A0095B108 /* Array+UInt8.swift in Sources */,
 				2B5ACA612BFB2A1900397BFC /* ExarotonServerModel+WebSocket.swift in Sources */,
 				2B5ACA5F2BFB2A1200397BFC /* ExarotonServerModel+HTTP.swift in Sources */,
-				F3B4D0D92A1A776A0095B108 /* MCQuery.swift in Sources */,
 				2B54E0872BDDFB16001B6877 /* Version+.swift in Sources */,
 				2BD03D792907F93200BE1D1F /* Model.swift in Sources */,
 				2B5BC3D52BFC4B4100348C00 /* ExarotonAccountTokenInputView.swift in Sources */,
 				F3B18FAC2BE242A2002C7851 /* Constants.swift in Sources */,
-				F3B4D0E02A1A777A0095B108 /* MCServerStatusInfo.swift in Sources */,
-				F3B4D0D52A1A776A0095B108 /* MCSLPError.swift in Sources */,
-				F3B4D0D22A1A776A0095B108 /* MCSLPStatus.swift in Sources */,
-				F3B4D0DA2A1A776A0095B108 /* Int32+BigEndianBytes.swift in Sources */,
-				F3B4D0DF2A1A777A0095B108 /* MCServerInfo.swift in Sources */,
 				2B79DCF629066BBC000C21A1 /* ContentView.swift in Sources */,
 				F30F00F12BDCC6D900CAA802 /* GUIClient.swift in Sources */,
 				F30F00EF2BDC966900CAA802 /* GameModel.swift in Sources */,
 				C0D000010000000000000001 /* LauncherServices.swift in Sources */,
-				F3B4D0DB2A1A776A0095B108 /* MCQuery+Packet.swift in Sources */,
-				F3B4D0CE2A1A776A0095B108 /* MCRCON.swift in Sources */,
 				F30F00ED2BDBDF7000CAA802 /* GameView.swift in Sources */,
-				F3B4D0D82A1A776A0095B108 /* MCQueryError.swift in Sources */,
 				2B8AB1CE2DA0CDF700DA6605 /* LinkMenu.swift in Sources */,
 				2B5ACA632BFB2A8300397BFC /* Config.swift in Sources */,
 				2B62C9922BF76C6600387498 /* ExarotonServerModel.swift in Sources */,
 				2BD301EF29000B2C00993823 /* LauncherUI.swift in Sources */,
 				2BA7F9942CA5848200ED2684 /* SettingsView.swift in Sources */,
-				F3B4D0D42A1A776A0095B108 /* MCSLP.swift in Sources */,
 				2BA06D742DA2E6500043C0CE /* GameList.swift in Sources */,
-				F3B4D0CF2A1A776A0095B108 /* RCONPacket.swift in Sources */,
 				F310C79E2C8B535700590F32 /* ExarotonCopyableText.swift in Sources */,
 				2BA06D722DA2DD760043C0CE /* SideBarTool.swift in Sources */,
 				F3FE52112BF7B494006E79AA /* ExarotonServerStatusView.swift in Sources */,
@@ -694,10 +655,6 @@
 			files = (
 				C0D000010000000000000002 /* LauncherServicesTests.swift in Sources */,
 				C0D000010000000000000003 /* ProtocolPacketTests.swift in Sources */,
-				C0D000010000000000000004 /* MCSLPPacket.swift in Sources */,
-				C0D000010000000000000005 /* MCSLPError.swift in Sources */,
-				C0D000010000000000000006 /* RCONPacket.swift in Sources */,
-				C0D000010000000000000007 /* Int32+littleEndianBytes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1072,6 +1029,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
 			productName = OrzMCRemoteHosting;
+		};
+		C0D100020000000000000005 /* OrzMCProtocol */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0D100010000000000000001 /* XCLocalSwiftPackageReference "." */;
+			productName = OrzMCProtocol;
 		};
 		E20C65892C8AFD8400831909 /* OrzAppUpdater */ = {
 			isa = XCSwiftPackageProductDependency;

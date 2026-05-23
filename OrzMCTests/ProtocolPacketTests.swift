@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import OrzMC
+@testable import OrzMCProtocol
 
 final class ProtocolPacketTests: XCTestCase {
     func testSLPPacketReadsStringLengthSafely() throws {
