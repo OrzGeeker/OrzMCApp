@@ -61,35 +61,41 @@ struct VersionFilterService {
 }
 
 struct ServerProcessService {
-    private let registry = ServerProcessRegistry()
+    private var store = ManagedServerProcessStore()
 
     func key(versionId: String, software: SettingsModel.ServerSoftware) -> String {
         ManagedServerKey(versionId: versionId, softwareId: software.rawValue).rawValue
     }
 
-    func filteredPIDMap(_ pidMap: [String: String], runningPids: Set<String>) -> [String: String] {
-        let processes = pidMap.reduce(into: [ManagedServerKey: ProcessIdentifier]()) { result, element in
-            result[ManagedServerKey(rawValue: element.key)] = ProcessIdentifier(element.value)
-        }
-        let runningProcessIds = Set(runningPids.map { ProcessIdentifier($0) })
-        return registry.filtered(processes, runningProcessIds: runningProcessIds)
-            .reduce(into: [String: String]()) { result, element in
-                result[element.key.rawValue] = element.value.rawValue
-            }
+    mutating func record(_ launchedServer: LaunchedServer) {
+        store.record(
+            ProcessIdentifier(launchedServer.pid),
+            for: ManagedServerKey(versionId: launchedServer.versionId, softwareId: launchedServer.software.rawValue)
+        )
     }
 
-    func hasManagedRunningServers(_ pidMap: [String: String]) -> Bool {
-        registry.hasManagedRunningServers(processes(from: pidMap))
+    mutating func refresh(runningPids: Set<String>) {
+        store.refresh(runningProcessIds: Set(runningPids.map { ProcessIdentifier($0) }))
     }
 
-    func pids(from pidMap: [String: String]) -> [String] {
-        registry.processIds(from: processes(from: pidMap)).map(\.rawValue)
+    var hasManagedRunningServers: Bool {
+        store.hasManagedRunningServers
     }
 
-    private func processes(from pidMap: [String: String]) -> [ManagedServerKey: ProcessIdentifier] {
-        pidMap.reduce(into: [ManagedServerKey: ProcessIdentifier]()) { result, element in
-            result[ManagedServerKey(rawValue: element.key)] = ProcessIdentifier(element.value)
-        }
+    func pids() -> [String] {
+        store.processIds().map(\.rawValue)
+    }
+
+    func pid(versionId: String, software: SettingsModel.ServerSoftware) -> String? {
+        store.processId(for: ManagedServerKey(versionId: versionId, softwareId: software.rawValue))?.rawValue
+    }
+
+    mutating func remove(versionId: String, software: SettingsModel.ServerSoftware) {
+        store.removeProcess(for: ManagedServerKey(versionId: versionId, softwareId: software.rawValue))
+    }
+
+    mutating func removeAll() {
+        store.removeAll()
     }
 }
 

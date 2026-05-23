@@ -77,8 +77,6 @@ final class GameModel {
     
     var currentJavaMajorVersion: Int?
     
-    static var serverPIDMap = [String: String]()
-    
     var isShowKillAllServerButton: Bool = false
     
     var serverPluginDownloadProgress: Float = 0
@@ -89,7 +87,7 @@ final class GameModel {
 
     private let javaRuntimeService = JavaRuntimeService()
 
-    private let serverProcessService = ServerProcessService()
+    private var serverProcessService = ServerProcessService()
 
     private let gameLaunchService = GameLaunchService()
 }
@@ -147,11 +145,11 @@ extension GameModel {
         else {
             return nil
         }
-        return serverPID(versionId: selectedVersion.id, software: settingsModel.serverSoftware)
+        return serverProcessService.pid(versionId: selectedVersion.id, software: settingsModel.serverSoftware)
     }
 
     func isServerRunning(versionId: String, software: SettingsModel.ServerSoftware) -> Bool {
-        guard let pid = serverPID(versionId: versionId, software: software)
+        guard let pid = serverProcessService.pid(versionId: versionId, software: software)
         else {
             return false
         }
@@ -247,27 +245,25 @@ extension GameModel {
         else {
             return
         }
-        GameModel.serverPIDMap[serverKey(versionId: launchedServer.versionId, software: launchedServer.software)] = launchedServer.pid
+        serverProcessService.record(launchedServer)
     }
     
     func checkRunningServer() {
         let pids = (try? Shell.allRunningServerPids()) ?? []
         let running = Set(pids)
         runningServerPids = running
-        if !GameModel.serverPIDMap.isEmpty {
-            GameModel.serverPIDMap = serverProcessService.filteredPIDMap(GameModel.serverPIDMap, runningPids: running)
-        }
-        isShowKillAllServerButton = serverProcessService.hasManagedRunningServers(GameModel.serverPIDMap)
+        serverProcessService.refresh(runningPids: running)
+        isShowKillAllServerButton = serverProcessService.hasManagedRunningServers
     }
     
     func stopAllRunningServer() {
         Task {
             do {
-                let pids = serverProcessService.pids(from: GameModel.serverPIDMap)
+                let pids = serverProcessService.pids()
                 for pid in pids {
                     try Shell.runCommand(with: ["kill", pid])
                 }
-                GameModel.serverPIDMap.removeAll()
+                serverProcessService.removeAll()
                 checkRunningServer()
             } catch {
                 errorMessage = "Failed to stop servers: \(error.localizedDescription)"
@@ -276,7 +272,7 @@ extension GameModel {
     }
 
     func serverPID(versionId: String, software: SettingsModel.ServerSoftware) -> String? {
-        GameModel.serverPIDMap[serverKey(versionId: versionId, software: software)]
+        serverProcessService.pid(versionId: versionId, software: software)
     }
 
     func stopServer(versionId: String, software: SettingsModel.ServerSoftware) {
@@ -286,7 +282,7 @@ extension GameModel {
         }
         do {
             try Shell.runCommand(with: ["kill", pid])
-            GameModel.serverPIDMap.removeValue(forKey: serverKey(versionId: versionId, software: software))
+            serverProcessService.remove(versionId: versionId, software: software)
             checkRunningServer()
         } catch {
             errorMessage = "Failed to stop server: \(error.localizedDescription)"

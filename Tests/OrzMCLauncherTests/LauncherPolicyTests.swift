@@ -54,4 +54,25 @@ final class LauncherPolicyTests: XCTestCase {
         XCTAssertEqual(registry.processIds(from: filtered), [ProcessIdentifier("202")])
         XCTAssertFalse(registry.hasManagedRunningServers([:]))
     }
+
+    func testManagedServerProcessStoreTracksAndRefreshesProcesses() {
+        let vanillaKey = ManagedServerKey(versionId: "1.21.1", softwareId: "vanilla")
+        let paperKey = ManagedServerKey(versionId: "1.20.6", softwareId: "paper")
+        var store = ManagedServerProcessStore()
+
+        store.record(ProcessIdentifier("101"), for: vanillaKey)
+        store.record(ProcessIdentifier("202"), for: paperKey)
+
+        XCTAssertTrue(store.hasManagedRunningServers)
+        XCTAssertEqual(store.processId(for: vanillaKey), ProcessIdentifier("101"))
+
+        store.refresh(runningProcessIds: [ProcessIdentifier("202")])
+
+        XCTAssertNil(store.processId(for: vanillaKey))
+        XCTAssertEqual(store.processId(for: paperKey), ProcessIdentifier("202"))
+
+        store.removeProcess(for: paperKey)
+
+        XCTAssertFalse(store.hasManagedRunningServers)
+    }
 }

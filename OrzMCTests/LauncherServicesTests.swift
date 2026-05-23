@@ -20,16 +20,25 @@ final class LauncherServicesTests: XCTestCase {
     }
 
     func testServerProcessKeyAndPIDFiltering() {
-        let service = ServerProcessService()
+        var service = ServerProcessService()
 
         XCTAssertEqual(service.key(versionId: "1.21.5", software: .paper), "1.21.5#Paper")
-        XCTAssertEqual(
-            service.filteredPIDMap(["paper": "100", "vanilla": "200"], runningPids: ["200"]),
-            ["vanilla": "200"]
-        )
-        XCTAssertFalse(service.hasManagedRunningServers([:]))
-        XCTAssertTrue(service.hasManagedRunningServers(["vanilla": "200"]))
-        XCTAssertEqual(Set(service.pids(from: ["paper": "100", "vanilla": "200"])), ["100", "200"])
+        XCTAssertFalse(service.hasManagedRunningServers)
+
+        service.record(LaunchedServer(versionId: "1.21.5", software: .paper, pid: "100"))
+        service.record(LaunchedServer(versionId: "1.20.6", software: .vanilla, pid: "200"))
+
+        XCTAssertTrue(service.hasManagedRunningServers)
+        XCTAssertEqual(Set(service.pids()), ["100", "200"])
+
+        service.refresh(runningPids: ["200"])
+
+        XCTAssertNil(service.pid(versionId: "1.21.5", software: .paper))
+        XCTAssertEqual(service.pid(versionId: "1.20.6", software: .vanilla), "200")
+
+        service.remove(versionId: "1.20.6", software: .vanilla)
+
+        XCTAssertFalse(service.hasManagedRunningServers)
     }
 
     func testVersionFiltering() throws {
