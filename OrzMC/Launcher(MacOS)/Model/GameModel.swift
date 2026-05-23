@@ -90,6 +90,8 @@ final class GameModel {
     private var serverProcessService = ServerProcessService()
 
     private let gameLaunchService = GameLaunchService()
+
+    private let serverPluginDownloadService = ServerPluginDownloadService()
 }
 
 extension GameModel {
@@ -314,30 +316,22 @@ extension GameModel {
             else {
                 return
             }
-            let serverPluginUpdateDirPath = GameDir.serverPluginUpdate(version: version, type: Game.GameType.paper.rawValue).dirPath
-            try serverPluginUpdateDirPath.makeDirIfNeed()
-            let outputDirFileURL = URL(fileURLWithPath: serverPluginUpdateDirPath)
-            serverPluginDownloadProgress = Float.leastNonzeroMagnitude
-            let plugin = PaperPlugin()
-            let allPlugins = try await plugin.allPlugin()
-            var downloadedPluginCount = 0
-            let pluginTotalCount = allPlugins.count
-            for plugin in allPlugins {
-                downloadedPluginCount += 1
-                guard let downloadItem = try await plugin.downloadItem(outputFileDirURL: outputDirFileURL, version: nil),
-                      let pluginName = plugin.name
-                else {
-                    continue
-                }
-                serverPluginDownloadProgressTitle = "\(pluginName)(\(downloadedPluginCount)/\(pluginTotalCount))"
-                try await Downloader.download(downloadItem)
-                serverPluginDownloadProgress = Float(downloadedPluginCount) / Float(allPlugins.count)
-            }
-            await Shell.runCommand(with: ["open", outputDirFileURL.path])
-            serverPluginDownloadProgress = 0
+            try await serverPluginDownloadService.downloadAllPaperPlugins(
+                versionId: version,
+                progressHandler: serverPluginDownloadProgressHandler
+            )
         } catch {
             serverPluginDownloadProgress = 0
             errorMessage = "Failed to download server plugins: \(error.localizedDescription)"
+        }
+    }
+
+    var serverPluginDownloadProgressHandler: ServerPluginDownloadProgressHandler {
+        { [weak self] progress in
+            await MainActor.run {
+                self?.serverPluginDownloadProgressTitle = progress.title
+                self?.serverPluginDownloadProgress = progress.fraction
+            }
         }
     }
 }
