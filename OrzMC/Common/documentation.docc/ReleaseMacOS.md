@@ -1,7 +1,10 @@
 # macOS 发布流程
 
-本项目的完整 macOS 启动器不通过 Mac App Store 分发，而是使用
-Developer ID 签名、Apple 公证和 Sparkle 自动更新。
+@Metadata {
+    @TitleHeading("")
+}
+
+本项目的完整 macOS 启动器不通过 Mac App Store 分发，而是使用 Developer ID 签名、Apple 公证和 Sparkle 自动更新。
 
 ## 发布前准备
 
@@ -26,8 +29,7 @@ NOTARY_KEYCHAIN_PROFILE=orzmc-notary \
 ./scripts/release-macos.sh
 ```
 
-脚本会从 `OrzMC/Configuration/Config.xcconfig` 读取
-`MARKETING_VERSION` 和 `CURRENT_PROJECT_VERSION`，然后生成：
+脚本会从 `OrzMC/Configuration/Config.xcconfig` 读取 `MARKETING_VERSION` 和 `CURRENT_PROJECT_VERSION`，然后生成：
 
 - `dist/macos/<version>-<build>/...zip`：用于 Sparkle 更新。
 - `dist/macos/<version>-<build>/...dmg`：用于直接下载。
@@ -46,7 +48,7 @@ NOTARY_KEYCHAIN_PROFILE=orzmc-notary \
 
 - `OrzMC.xcodeproj/project.pbxproj` 中的 `MACOSX_DEPLOYMENT_TARGET = 14.0`
 - `products/appcast.xml` 中的 `sparkle:minimumSystemVersion`
-- `README.md` 中面向用户的安装要求说明
+- DocC 中面向用户的安装要求说明
 
 ## 常用选项
 
