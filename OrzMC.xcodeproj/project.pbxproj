@@ -993,7 +993,7 @@
 		};
 		2B8442F42E17B28D00CB0EA0 /* XCRemoteSwiftPackageReference "OrzMCKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/OrzGeeker/OrzMCKit.git";
+			repositoryURL = "https://github.com/OrzMC/OrzMCKit.git";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 0.0.6;
